@@ -1,19 +1,7 @@
 services:
-  ollama:
-    image: ollama/ollama:rocm
-    container_name: ollama
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
     restart: always
-    devices:
-      - /dev/kfd
-      - /dev/dri
     volumes:
-      - /mnt/data/ollama/:/root/.ollama
-    networks:
-      - ai
-  open-webui:
-  
-
-networks:
-  ai:
-  caddy:
-    external: true
+      - /var/run/docker.sock:/var/run/docker.sock
