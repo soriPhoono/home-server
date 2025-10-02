@@ -1,0 +1,19 @@
+services:
+  ollama:
+    image: ollama/ollama:rocm
+    container_name: ollama
+    restart: always
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    volumes:
+      - /mnt/data/ollama/:/root/.ollama
+    networks:
+      - ai
+  open-webui:
+  
+
+networks:
+  ai:
+  caddy:
+    external: true
