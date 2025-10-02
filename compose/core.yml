@@ -5,6 +5,9 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      replicas: 1
+
   traefik:
     image: traefik:latest
     container_name: traefik
@@ -15,4 +18,4 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       
-      - ../reverse-proxy/traefik.yml:/etc/traefik/traefik.yml:ro
+      - reverse-proxy/traefik.yml:/etc/traefik/traefik.yml:ro
