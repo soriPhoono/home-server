@@ -5,3 +5,11 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  traefik:
+    image: traefik:latest
+    ports:
+      - "8080:8080" # The Web UI
+      - "80:80"     # The HTTP port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    
