@@ -13,13 +13,13 @@ services:
       
       labels:
         - "traefik.enable=true"
+        
+        - "traefik.http.routers.searxng.rule=Host(`search.local.${DOMAIN_NAME}`)"
+        - "traefik.http.routers.searxng.entrypoints=websecure"
+        - "Traefik.http.routers.searxng.service=searxng"
+        - "traefik.http.routers.searxng.tls=true"
 
-        # - "traefik.http.routers.searxng.rule=Host(`search.tail.${DOMAIN_NAME}`)"
-        # - "traefik.http.routers.searxng.entrypoints=websecure"
-        # - "Traefik.http.routers.searxng.service=searxng@swarm"
-        # - "traefik.http.routers.searxng.tls=true"
-
-        # - "traefik.http.services.searxng.loadbalancer.server.port=8080" # SearxNG default port
+        - "traefik.http.services.searxng.loadbalancer.server.port=8080" # SearxNG default port
 
 networks:
   traefik_proxy:
