@@ -32,7 +32,7 @@ services:
       # Mount the Docker socket for the Swarm provider
       # This MUST be run from a manager node to access the Swarm API via the socket.
       - /var/run/docker.sock:/var/run/docker.sock:ro   # Swarm API socket
-      - traefik_certs:/certs:ro
+      - traefik_certs:/certs
 
     # Traefik Static configuration via command-line arguments
     command:
