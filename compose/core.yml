@@ -5,17 +5,106 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      replicas: 1
 
   traefik:
     image: traefik:latest
-    container_name: traefik
-    restart: always
+
+    networks:
+    # Connect to the 'traefik_proxy' overlay network for inter-container communication across nodes
+      - traefik_proxy
+
     ports:
-      - "8080:8080" # The Web UI
-      - "80:80"     # The HTTP port
+        # Expose Traefik's entry points to the Swarm
+        # Swarm requires the long syntax for ports.
+      - target: 80 # Container port (Traefik web entry point)
+        published: 80 # Host port exposed on the nodes
+        protocol: tcp
+        # 'host' mode binds directly to the node's IP where the task runs.
+        # 'ingress' mode uses Swarm's Routing Mesh (load balances across nodes).
+        # Choose based on your load balancing strategy. 'host' is often simpler if using an external LB.
+        mode: host
+      - target: 443 # Container port ( Traefik websecure entry point)
+        published: 443 # Host port
+        protocol: tcp
+        mode: host
+
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      
-      - ../reverse-proxy/traefik.yml:/etc/traefik/traefik.yml:ro
+      # Mount the Docker socket for the Swarm provider
+      # This MUST be run from a manager node to access the Swarm API via the socket.
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # Swarm API socket
+      - traefik_certs:/certs:ro
+
+    # Traefik Static configuration via command-line arguments
+    command:
+      # HTTP EntryPoint
+      - "--entrypoints.web.address=:80"
+
+      # Configure HTTP to HTTPS Redirection
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+
+      # HTTPS EntryPoint
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+
+      # Let’s Encrypt / certificate resolver
+      - "--certificatesResolvers.le.acme.tlsChallenge=true"
+      - "--certificatesResolvers.le.acme.email=admin@cryptic-coders.net"
+      - "--certificatesResolvers.le.acme.storage=/certs/acme.json"
+
+      # Enable the Docker Swarm provider (instead of Docker provider)
+      - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
+
+      # Watch for Swarm service changes (requires socket access)
+      - "--providers.swarm.watch=true"
+
+      # Recommended: Don't expose services by default; require explicit labels
+      - "--providers.swarm.exposedbydefault=false"
+
+      # Specify the default network for Traefik to connect to services
+      - "--providers.swarm.network=traefik_proxy"
+
+      # API & Dashboard
+      - "--api.dashboard=true" # Enable the dashboard
+      - "--api.insecure=false" # Explicitly disable insecure API mod
+
+      # Observability
+      - "--log.level=INFO" # Set the Log Level e.g INFO, DEBUG
+      - "--accesslog=true" # Enable Access Logs
+      - "--metrics.prometheus=true"  # Enable Prometheus
+
+    deploy:
+      replicas: 1
+      placement:
+
+      # Placement constraints restrict where Traefik tasks can run.
+      # Running on manager nodes is common for accessing the Swarm API via the socket.
+        constraints:
+          - node.role == manager
+
+      # Traefik Dynamic configuration via labels
+      # In Swarm, labels on the service definition configure Traefik routing for that service.
+      labels:
+        - "traefik.enable=true"
+
+        # Dashboard router
+        - "traefik.http.routers.dashboard.rule=Host(`traefik.local.cryptic-coders.net`)"
+        - "traefik.http.routers.dashboard.entrypoints=websecure"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.routers.dashboard.tls.certresolver=le"
+
+        # Basic‑auth middleware
+        - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$jHCmtz.T$$ZeCWbmoaf8XrvPgTekfLx0"
+        - "traefik.http.routers.dashboard.middlewares=dashboard-auth@swarm"
+
+        # Service hint
+        - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+networks:
+  traefik_proxy:
+    driver: overlay
+    attachable: true
+
+volumes:
+  traefik_certs:
