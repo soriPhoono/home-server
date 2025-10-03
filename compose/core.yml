@@ -49,8 +49,9 @@ services:
       - "--entrypoints.websecure.http.tls=true"
 
       # Let’s Encrypt / certificate resolver
-      - "--certificatesResolvers.le.acme.tlsChallenge=true"
+      - "--entrypoints.websecure.http.tls.certresolver=le"
       - "--certificatesResolvers.le.acme.email=admin@cryptic-coders.net"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
       - "--certificatesResolvers.le.acme.storage=/certs/acme.json"
 
       # Enable the Docker Swarm provider (instead of Docker provider)
@@ -93,7 +94,6 @@ services:
         - "traefik.http.routers.dashboard.entrypoints=websecure"
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.routers.dashboard.tls=true"
-        - "traefik.http.routers.dashboard.tls.certresolver=le"
 
         # Basic‑auth middleware
         - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$jHCmtz.T$$ZeCWbmoaf8XrvPgTekfLx0"
