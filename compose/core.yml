@@ -122,8 +122,7 @@ services:
 
 networks:
   traefik_proxy:
-    driver: overlay
-    attachable: true
+    external: true
 
 volumes:
   traefik_certs:
