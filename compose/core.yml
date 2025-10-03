@@ -33,6 +33,7 @@ services:
       # This MUST be run from a manager node to access the Swarm API via the socket.
       - /var/run/docker.sock:/var/run/docker.sock:ro   # Swarm API socket
       - traefik_certs:/certs
+      - traefik_logs:/logs
 
     # Traefik Static configuration via command-line arguments
     command:
@@ -73,7 +74,24 @@ services:
       # Observability
       - "--log.level=INFO" # Set the Log Level e.g INFO, DEBUG
       - "--accesslog=true" # Enable Access Logs
+
+      # Optionally change format or output file (requires volume)
+      - "--accesslog.format=json"
+      - "--accesslog.filepath=/logs/access.log"
+
+      # Optionally filter logs
+      - "--accesslog.filters.statuscodes=400-599"
+
       - "--metrics.prometheus=true"  # Enable Prometheus
+
+      # If using a dedicated metrics entry point, define it:
+      - "--entrypoints.metrics.address=:8082"
+
+      # Optionally change the entry point metrics are exposed on (defaults to 'traefik')
+      - "--metrics.prometheus.entrypoint=metrics"
+
+      # Add labels to metrics for routers/services (can increase cardinality)
+      - "--metrics.prometheus.addrouterslabels=true"
 
     deploy:
       replicas: 1
@@ -109,3 +127,4 @@ networks:
 
 volumes:
   traefik_certs:
+  traefik_logs:
