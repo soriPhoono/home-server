@@ -1,11 +1,4 @@
 services:
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   traefik:
     image: traefik:latest
 
@@ -92,7 +85,6 @@ services:
 
       # Add labels to metrics for routers/services (can increase cardinality)
       - "--metrics.prometheus.addrouterslabels=true"
-
     deploy:
       replicas: 1
       placement:
