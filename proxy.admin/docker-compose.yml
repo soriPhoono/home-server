@@ -3,8 +3,8 @@ services:
     image: traefik:latest
 
     networks:
-    # Connect to the 'traefik_proxy' overlay network for inter-container communication across nodes
-      - traefik_proxy
+    # Connect to the 'traefik_public' overlay network for inter-container communication across nodes
+      - traefik_public
 
     ports:
         # Expose Traefik's entry points to the Swarm
@@ -58,7 +58,7 @@ services:
       - "--providers.swarm.exposedbydefault=false"
 
       # Specify the default network for Traefik to connect to services
-      - "--providers.swarm.network=traefik_proxy"
+      - "--providers.swarm.network=traefik_public"
 
       # API & Dashboard
       - "--api.dashboard=true" # Enable the dashboard
@@ -113,7 +113,7 @@ services:
         - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
 networks:
-  traefik_proxy:
+  traefik_public:
     external: true
 
 volumes:
