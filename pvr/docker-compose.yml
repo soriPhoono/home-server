@@ -1,0 +1,68 @@
+services:
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: always
+    volumes:
+      - sonarr_config:/config
+      - /mnt/media/Shows:/shows
+      - /mnt/media/Torrent:/downloads
+    networks:
+      - reverse_proxy_network
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    restart: always
+    volumes:
+      - radarr_config:/config
+      - /mnt/media/Movies:/movies
+      - /mnt/media/Torrent:/downloads
+    networks:
+      - reverse_proxy_network
+
+  jellyfin:
+    image: linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: always
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - jellyfin_config:/config
+      - /mnt/media/Movies:/data/movies
+      - /mnt/media/Shows:/data/shows
+    networks:
+      - reverse_proxy_network
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr
+    container_name: jellyseerr
+    restart: always
+    depends_on:
+      - radarr
+      - sonarr
+      - jellyfin
+    volumes:
+      - jellyseerr_config:/app/config/
+    networks:
+      - reverse_proxy_network
+    labels:
+      caddy: pvr.tail.cryptic-coders.net
+      caddy.redir: /shows /shows/
+      caddy.redir_1: /movies /movies/
+      caddy.redir_2: /watch /watch/
+      caddy.reverse_proxy: /shows/* http://sonarr:8989
+      caddy.reverse_proxy_0: /movies/* http://radarr:7878
+      caddy.reverse_proxy_1: /watch/* http://jellyfin:8096
+      caddy.reverse_proxy_2: http://jellyseerr:5055
+      caddy.tls.protocols: "tls1.3" # Optional: Enforce TLS 1.3. Default is tls1.2 and tls1.3.
+
+volumes:
+  sonarr_config:
+  radarr_config:
+  jellyfin_config:
+  jellyseerr_config:
+
+networks:
+  reverse_proxy_network:
+    external: true
