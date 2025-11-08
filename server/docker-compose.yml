@@ -1,15 +1,38 @@
 version: "3.2"
 
 services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   caddy:
     image: homeall/caddy-reverse-proxy-cloudflare:latest
     container_name: caddy
     restart: always
     volumes:
-      - caddy_config:/data/caddy/
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      
+      - caddy_config:/data/caddy/
     ports:
       - 80:80
       - 443:443
       - 443:443/udp
-    
+    networks:
+      reverse_proxy_network:
+        ipv4_address: 172.24.2.24
+    labels:
+      caddy.email: ${CLOUDFLARE_EMAIL:?cloudflare email is not set}
+      caddy.acme_dns: cloudflare ${CLOUDFLARE_API_TOKEN:?cloudflare api token is not set}
+
+      caddy_0: admin.tail.${DOMAIN_NAME:?domain name is not set}
+      caddy_0.reverse_proxy: http://portainer-server-be:9443
+      caddy_0.tls.protocols: tls1.3
+
+volumes:
+  caddy_config:
+  
+networks:
+  reverse_proxy_network:
+    external: true
