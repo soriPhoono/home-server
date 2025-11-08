@@ -47,7 +47,7 @@ services:
     networks:
       - reverse_proxy_network
     labels:
-      caddy: pvr.tail.cryptic-coders.net
+      caddy: pvr.tail.${DOMAIN_NAME}
       caddy.redir: /shows /shows/
       caddy.redir_1: /movies /movies/
       caddy.redir_2: /watch /watch/
