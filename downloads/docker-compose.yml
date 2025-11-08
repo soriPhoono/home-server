@@ -11,6 +11,8 @@ services:
       - TZ=America/Chicago
     networks:
       - reverse_proxy_network
+    ports:
+      - 9696:9696
 
   qbittorrent:
     image: linuxserver/qbittorrent
@@ -23,6 +25,8 @@ services:
       - /mnt/media/Torrent:/downloads
     networks:
       - reverse_proxy_network
+    ports:
+      - 8080:8080
     labels:
       caddy: downloads.tail.${DOMAIN_NAME:?"DOMAIN_NAME is not set"}
       caddy.redir: /indexers /indexers/
