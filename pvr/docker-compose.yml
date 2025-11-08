@@ -33,6 +33,8 @@ services:
       - /mnt/media/Shows:/data/shows
     networks:
       - reverse_proxy_network
+    ports:
+      - 8096:8096
 
   jellyseerr:
     image: fallenbagel/jellyseerr
