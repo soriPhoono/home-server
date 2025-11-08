@@ -7,6 +7,8 @@ services:
       - sonarr_config:/config
       - /mnt/media/Shows:/shows
       - /mnt/media/Torrent:/downloads
+    environment:
+      - TZ=America/Chicago
     networks:
       - reverse_proxy_network
     ports:
@@ -20,6 +22,8 @@ services:
       - radarr_config:/config
       - /mnt/media/Movies:/movies
       - /mnt/media/Torrent:/downloads
+    environment:
+      - TZ=America/Chicago
     networks:
       - reverse_proxy_network
     ports:
@@ -35,6 +39,8 @@ services:
       - jellyfin_config:/config
       - /mnt/media/Movies:/data/movies
       - /mnt/media/Shows:/data/shows
+    environment:
+      - TZ=America/Chicago
     networks:
       - reverse_proxy_network
     ports:
@@ -50,6 +56,8 @@ services:
       - jellyfin
     volumes:
       - jellyseerr_config:/app/config/
+    environment:
+      - TZ=America/Chicago
     networks:
       - reverse_proxy_network
     labels:

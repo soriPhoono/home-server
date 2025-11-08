@@ -1,0 +1,39 @@
+services:
+  prowlarr:
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    restart: unless-stopped
+    depends_on:
+      - qbittorrent
+    volumes:
+      - prowlarr_config:/config
+    environment:
+      - TZ=America/Chicago
+    networks:
+      - reverse_proxy_network
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - qbittorrent_config:/config
+      - /mnt/media/Torrent:/downloads
+    networks:
+      - reverse_proxy_network
+    labels:
+      caddy: downloads.tail.cryptic-coders.networks
+      caddy.redir: /indexers /indexers/
+      caddy.reverse_proxy: /indexers/* http://prowlarr:9696
+      caddy.reverse_proxy_0: "{{upstreams 8080}}"
+      caddy.tls.protocols: tls1.3
+
+volumes:
+  prowlarr_config:
+  qbittorrent_config:
+
+networks:
+  reverse_proxy_network:
+    external: true
