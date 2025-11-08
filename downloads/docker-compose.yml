@@ -24,7 +24,7 @@ services:
     networks:
       - reverse_proxy_network
     labels:
-      caddy: downloads.tail.cryptic-coders.networks
+      caddy: downloads.tail.${DOMAIN_NAME:?"DOMAIN_NAME is not set"}
       caddy.redir: /indexers /indexers/
       caddy.reverse_proxy: /indexers/* http://prowlarr:9696
       caddy.reverse_proxy_0: "{{upstreams 8080}}"
