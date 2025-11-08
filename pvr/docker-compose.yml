@@ -9,6 +9,8 @@ services:
       - /mnt/media/Torrent:/downloads
     networks:
       - reverse_proxy_network
+    ports:
+      - 8989:8989
 
   radarr:
     image: linuxserver/radarr:latest
@@ -20,6 +22,8 @@ services:
       - /mnt/media/Torrent:/downloads
     networks:
       - reverse_proxy_network
+    ports:
+      - 7878:7878
 
   jellyfin:
     image: linuxserver/jellyfin:latest
