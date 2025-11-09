@@ -1,3 +1,11 @@
+# Docker Compose file for Caddy reverse proxy with Watchtower update service
+# Using Cloudflare for DNS challenge automation for TLS certificates
+#
+# Required environment variables:
+# - CLOUDFLARE_EMAIL: Your Cloudflare account email
+# - CLOUDFLARE_API_TOKEN: Your Cloudflare API token with DNS edit permissions
+# - DOMAIN_NAME: The domain name to be used for the reverse proxy
+
 version: "3.2"
 
 services:
@@ -7,13 +15,14 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
   caddy:
     image: homeall/caddy-reverse-proxy-cloudflare:latest
     container_name: caddy
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      
+
       - caddy_config:/data/caddy/
     ports:
       - 80:80
@@ -32,7 +41,7 @@ services:
 
 volumes:
   caddy_config:
-  
+
 networks:
   reverse_proxy_network:
     external: true
