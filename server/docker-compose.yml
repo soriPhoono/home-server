@@ -9,6 +9,7 @@
 version: "3.8"
 
 services:
+  # Watchtower service to automatically update Docker containers
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -16,6 +17,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  # Caddy reverse proxy service
   caddy:
     image: homeall/caddy-reverse-proxy-cloudflare:latest
     container_name: caddy
