@@ -7,10 +7,44 @@
 version: '3.8'
 
 services:
+  prowlarr:
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    restart: unless-stopped
+    depends_on:
+      - qbittorrent
+    volumes:
+      - prowlarr_config:/config
+    environment:
+      - TZ=America/Chicago
+    networks:
+      - reverse_proxy_network
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - qbittorrent_config:/config
+      - /mnt/media/Torrent:/downloads
+    networks:
+      - reverse_proxy_network
+    labels:
+      caddy: downloads.tail.${DOMAIN_NAME:?"DOMAIN_NAME is not set"}
+      caddy.redir: /indexers /indexers/
+      caddy.reverse_proxy: /indexers/* http://prowlarr:9696
+      caddy.reverse_proxy_0: "{{upstreams 8080}}"
+      caddy.tls.protocols: tls1.3
+
   sonarr:
     image: linuxserver/sonarr:latest
     container_name: sonarr
     restart: always
+    depends_on:
+      - qbittorrent
+      - prowlarr
     volumes:
       - sonarr_config:/config
       - /mnt/media/Shows:/shows
@@ -24,6 +58,9 @@ services:
     image: linuxserver/radarr:latest
     container_name: radarr
     restart: always
+    depends_on:
+      - qbittorrent
+      - prowlarr
     volumes:
       - radarr_config:/config
       - /mnt/media/Movies:/movies
@@ -74,6 +111,8 @@ services:
       caddy.tls.protocols: "tls1.3" # Optional: Enforce TLS 1.3. Default is tls1.2 and tls1.3.
 
 volumes:
+  prowlarr_config:
+  qbittorrent_config:
   sonarr_config:
   radarr_config:
   jellyfin_config:
