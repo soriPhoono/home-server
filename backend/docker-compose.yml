@@ -1,3 +1,16 @@
+# Docker Compose configuration for PostgreSQL and Adminer
+# This setup uses a backend network for database services
+# and a reverse proxy network for routing Adminer.
+#
+# Required environment variables:
+#  DB_PASSWORD - The password for the PostgreSQL database user.
+#  SERVICES - A space-separated list of service names matching 
+#    database users and databases to create. For each service in this list,
+#    a corresponding service password must be supplied matching the pattern:
+#    <SERVICE_NAME>_PASSWORD. For example, if SERVICES="service1 service2",
+#    then SERVICE1_PASSWORD and SERVICE2_PASSWORD environment variables must 
+#    be set as well.
+#  DOMAIN_NAME - The domain name for accessing Adminer.
 version: "3.8"
 
 services:
