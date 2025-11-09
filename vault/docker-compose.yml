@@ -24,7 +24,7 @@ services:
     labels:
       caddy: vault.admin.${DOMAIN_NAME:?"DOMAIN_NAME environment variable is not set"}
       caddy.reverse_proxy: "{{upstreams 8200}}"
-      caddy.tls.protocol: tls1.3
+      caddy.tls.protocols: tls1.3
 
 networks:
   backend_network:
