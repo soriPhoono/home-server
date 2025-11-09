@@ -31,7 +31,7 @@ services:
       - backend_network
 
   redis:
-    image: library/redis:alpine
+    image: library/redis:latest
     restart: always
     container_name: redis
     command: --save 60 1 --loglevel warning
