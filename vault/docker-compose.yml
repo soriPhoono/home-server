@@ -21,5 +21,11 @@ services:
       caddy.reverse_proxy: "{{upstreams 8200}}"
       caddy.tls.protocol: tls1.3
 
+networks:
+  backend_network:
+    external: true
+  reverse_proxy_network:
+    external: true
+
 volumes:
   vault-data:
