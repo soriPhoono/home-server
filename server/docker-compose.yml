@@ -6,7 +6,7 @@
 # - CLOUDFLARE_API_TOKEN: Your Cloudflare API token with DNS edit permissions
 # - DOMAIN_NAME: The domain name to be used for the reverse proxy
 
-version: "3.2"
+version: "3.8"
 
 services:
   watchtower:
