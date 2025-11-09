@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: always
+    container_name: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      # - postgres:/var/lib/postgresql/data
+      - ./scripts/postgres/:/docker-entrypoint-initdb.d/:ro
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?"DB_PASSWORD is not set"}
+    networks:
+      - backend_network
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+      - ADMINER_DEFAULT_DB_DRIVER=pgsql
+    networks:
+      - backend_network
+      - reverse_proxy_network
+    labels:
+      caddy: db.tail.${DOMAIN_NAME:?"DOMAIN_NAME is not set"}
+
+networks:
+  backend_network:
+    external: true
+  reverse_proxy_network:
+    external: true
