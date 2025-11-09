@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./config:/vault/config/:ro
+      - vault-data:/vault/data
+    environment:
+      - VAULT_CONFIG_FILE=/vault/config/vault.hcl
+      - VAULT_ADDR=http://0.0.0.0:8200
+    networks:
+      - backend_network
+      - reverse_proxy_network    
+
+volumes:
+  vault-data:
