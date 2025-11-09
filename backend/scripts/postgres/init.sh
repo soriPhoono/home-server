@@ -28,17 +28,21 @@ fi
 export PGPASSWORD="$POSTGRES_PASSWORD"
 
 for SERVICE_PREFIX in "${SERVICES[@]}"; do
-    echo "Preparing database for service: $SERVICE_PREFIX"
-
-    DB_NAME="${SERVICE_PREFIX}"
-    USER_NAME="${SERVICE_PREFIX}_user"
-    PASSWORD_VAR_NAME="${SERVICE_PREFIX^^}_PASSWORD"
-    PASSWORD_VALUE="${!PASSWORD_VAR_NAME}"
-
+    # Take the second element after splitting by : for SERVICE_PREFIX
+    # Example: for "funkwhale_service:testpass", SERVICE_PREFIX="funkwhale_service"
+    PASSWORD_VALUE="${SERVICE_PREFIX#*:}"
+    
     if [ -z "$PASSWORD_VALUE" ]; then
         echo "Error: Password for $USER_NAME is not set. Please define the environment variable $PASSWORD_VAR_NAME."
         exit 1
     fi
+
+    SERVICE_PREFIX="${SERVICE_PREFIX%%:*}"
+
+    echo "Preparing database for service: $SERVICE_PREFIX"
+
+    DB_NAME="${SERVICE_PREFIX}"
+    USER_NAME="${SERVICE_PREFIX}_user"
 
     echo "Processing service: $SERVICE_PREFIX (DB: $DB_NAME, User: $USER_NAME)"
 
