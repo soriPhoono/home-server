@@ -1,6 +1,5 @@
-# Docker Compose configuration for PostgreSQL and Adminer
-# This setup uses a backend network for database services
-# and a reverse proxy network for routing Adminer.
+# Docker Compose configuration for PostgreSQL
+# This setup uses a backend network for database services.
 #
 # Required environment variables:
 #  DB_PASSWORD - The password for the PostgreSQL database user.
@@ -30,23 +29,6 @@ services:
       - SERVICES=${SERVICES:?"SERVICES is not set"}
     networks:
       - backend_network
-
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: always
-    depends_on:
-      - postgres
-    environment:
-      - ADMINER_DEFAULT_SERVER=postgres
-      - ADMINER_DEFAULT_DB_DRIVER=pgsql
-    networks:
-      - backend_network
-      - reverse_proxy_network
-    labels:
-      caddy: db.tail.${DOMAIN_NAME:?"DOMAIN_NAME is not set"}
-      caddy.reverse_proxy: "{{upstreams 8080}}"
-      caddy.tls.protocol: tls1.3
 
 networks:
   backend_network:
