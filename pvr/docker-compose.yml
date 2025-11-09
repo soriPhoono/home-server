@@ -19,8 +19,6 @@ services:
       - TZ=America/Chicago
     networks:
       - reverse_proxy_network
-    ports:
-      - 8989:8989
 
   radarr:
     image: linuxserver/radarr:latest
@@ -34,8 +32,6 @@ services:
       - TZ=America/Chicago
     networks:
       - reverse_proxy_network
-    ports:
-      - 7878:7878
 
   jellyfin:
     image: linuxserver/jellyfin:latest
@@ -51,8 +47,6 @@ services:
       - TZ=America/Chicago
     networks:
       - reverse_proxy_network
-    ports:
-      - 8096:8096
 
   jellyseerr:
     image: fallenbagel/jellyseerr
