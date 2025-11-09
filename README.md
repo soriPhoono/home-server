@@ -58,6 +58,16 @@ Specifically, the **hosting module** within that repository handles:
     * **Compose Path:** Specify the path to the desired `docker-compose.yml` file within this repo (e.g., `pvr/docker-compose.yml`).
 7.  **Deploy:** Configure any necessary environment variables or settings, and click **"Deploy the stack."**\
 
+--
+
+## Deployment steps
+
+This project contains a number of docker-compose.yml files, each describes a particular pillar of the server's construction. The correct deployment order is below, each particular stack folder contains a readme describing extra steps after the deployment of each stack, the stack's function in the overall server structure, and locations for extra documentation.
+
+1. [server](https://github.com/soriPhoono/home-server/blob/main/server/docker-compose.yml)
+2. [backend](https://github.com/soriPhoono/home-server/blob/main/backend/docker-compose.yml)
+3. [pvr](https://github.com/soriPhoono/home-server/blob/main/pvr/docker-compose.yml) (optional)
+
 ---
 
 ## 💡 Contributing
