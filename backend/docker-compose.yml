@@ -29,6 +29,7 @@ services:
       - ./scripts/postgres/:/docker-entrypoint-initdb.d/:ro
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD:?"DB_PASSWORD is not set"}
+      - SERVICES=${SERVICES:?"SERVICES is not set"}
     networks:
       - backend_network
 
