@@ -25,6 +25,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     -- Grant broad permissions. Adjust these to be more restrictive if needed.
     GRANT pg_write_all_data TO vault_admin;
     GRANT pg_read_all_data TO vault_admin;
-
-    
 EOSQL

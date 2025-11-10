@@ -18,7 +18,7 @@ services:
       timeout: 5s
     volumes:
       - ./scripts/postgres/:/docker-entrypoint-initdb.d/:ro
-      
+
       - postgres:/var/lib/postgresql/
     environment:
       POSTGRES_PASSWORD: a-temp-password-for-init-only
@@ -61,7 +61,7 @@ services:
       - reverse_proxy_network
     labels:
       caddy: db.admin.${DOMAIN_NAME}
-      # Replace with your hashed password created from the command `caddy hash-password` 
+      # Replace with your hashed password created from the command `caddy hash-password`
       caddy.basic_auth.admin: $2a$14$5iIi8qc0OZj6sDP5dx16JuKoVzm6PtTrs2Xrcf3E2Cm5.MeV.Exau
       caddy.reverse_proxy: "{{upstreams 8080}}"
       caddy.tls.protocols: tls1.3
