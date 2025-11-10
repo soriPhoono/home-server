@@ -28,11 +28,6 @@ services:
         - traefik.http.routers.portainer.tls.certresolver=le
 
         - traefik.http.services.portainer.loadbalancer.server.port=9000
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   agent:
     image: portainer/agent:lts
@@ -45,11 +40,6 @@ services:
       mode: global
       placement:
         constraints: [node.platform.os == linux]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   shepherd:
     image: containrrr/shepherd
@@ -59,11 +49,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   traefik:
     image: traefik:latest
@@ -141,11 +126,6 @@ services:
 
         # Service hint
         - traefik.http.services.traefik.loadbalancer.server.port=8080
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 networks:
   agent-network:
