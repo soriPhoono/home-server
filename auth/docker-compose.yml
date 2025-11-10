@@ -1,3 +1,0 @@
-services:
-  authentik-server:
-    image: 
