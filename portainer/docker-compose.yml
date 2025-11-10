@@ -18,17 +18,18 @@ services:
     command:
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls=true
       - --entrypoints.traefik.address=:8080 # For the dashboard/API
 
       # Docker Swarm Provider (Dynamic Configuration source)
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false # Only expose services with 'traefik.enable=true' label
-      - --providers.docker.swarmmode=true
-      - --providers.docker.network=traefik-public # Connects Traefik to other services
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.watch=true
+      - --providers.swarm.exposedbydefault=false
+      - --providers.swarm.network=traefik-public
 
       # API and Dashboard
       - --api.dashboard=true
-      - --api.insecure=true # WARNING: Do not use in production without proper BasicAuth middleware
+      - --api.insecure=false # WARNING: Do not use in production without proper BasicAuth middleware
 
       # ACME / Let's Encrypt setup (Optional)
       - --certificatesresolvers.le.acme.email=your@email.com
@@ -38,9 +39,15 @@ services:
       - --certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53 # Recommended DNS resolvers for the challenge
       - --certificatesresolvers.le.acme.dnschallenge.delayBeforeCheck=0 # Optional, but helps speed up the check
 
+      # Observability
+      - --log.level=INFO # Set the Log Level e.g INFO, DEBUG
+      - --accesslog=true # Enable Access Logs
+      - --metrics.prometheus=true # Enable Prometheus
+
       # Optional: Enable redirect middleware for all HTTP to HTTPS traffic
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
     ports:
       - target: 80 # HTTP
         published: 80
@@ -61,7 +68,7 @@ services:
       # Mount the Docker socket for service discovery (Traefik reads container labels)
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount the ACME file for persistent certificates
-      - /mnt/data/traefik/acme.json:/acme/acme.json
+      - traefik-certs:/acme
     environment:
       - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_token
     networks:
@@ -72,6 +79,21 @@ services:
       placement:
         constraints:
           - node.role == manager # Recommended to run Traefik only on a manager node for stability
+      labels:
+        - traefik.enable=true
+
+        # Dashboard router
+        - traefik.http.routers.dashboard.rule=Host(`dashboard.swarm.localhost`)
+        - traefik.http.routers.dashboard.entrypoints=websecure
+        - traefik.http.routers.dashboard.service=api@internal
+        - traefik.http.routers.dashboard.tls=true
+
+        # Basic‑auth middleware
+        - traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$hpN8qr0J$$frjpxwhIw.OG0R2yn5dqW.
+        - traefik.http.routers.dashboard.middlewares=dashboard-auth@swarm
+
+        # Service hint
+        - traefik.http.services.traefik.loadbalancer.server.port=8080
 
   portainer:
     image: portainer/portainer-ee:lts
@@ -97,6 +119,7 @@ networks:
     external: true
 
 volumes:
+  traefik-certs:
   portainer-data:
 
 secrets:
