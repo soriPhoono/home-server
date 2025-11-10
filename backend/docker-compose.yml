@@ -51,7 +51,7 @@ services:
     restart: always
     container_name: adminer
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
       start_period: 20s
       interval: 30s
       retries: 5
@@ -64,12 +64,8 @@ services:
     networks:
       - backend_network
       - reverse_proxy_network
-    ports:
-      - 8080:8080
     labels:
       caddy: db.admin.${DOMAIN_NAME}
-      caddy.@authIP: client_ip 100.78.179.114 100.100.155.41
-      caddy.abort: '@authIP'
       # Replace with your hashed password created from the command `caddy hash-password` 
       caddy.basic_auth.admin: $2a$14$5iIi8qc0OZj6sDP5dx16JuKoVzm6PtTrs2Xrcf3E2Cm5.MeV.Exau
       caddy.reverse_proxy: "{{upstreams 8080}}"
