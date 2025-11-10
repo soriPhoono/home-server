@@ -94,11 +94,6 @@ services:
         published: 443
         protocol: tcp
         mode: host
-      # Port 8080 is often exposed for the dashboard/API, but not public-facing
-      # - target: 8080
-      #   published: 8080
-      #   protocol: tcp
-      #   mode: ingress
     secrets:
       - cf_token
     volumes:
