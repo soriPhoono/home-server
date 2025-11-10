@@ -25,7 +25,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-      - caddy_config:/data/caddy/
+      - caddy-config:/data/caddy/
     ports:
       - 80:80
       - 443:443
@@ -42,7 +42,7 @@ services:
       caddy_0.tls.protocols: tls1.3
 
 volumes:
-  caddy_config:
+  caddy-config:
 
 networks:
   reverse_proxy_network:

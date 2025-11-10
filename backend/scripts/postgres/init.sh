@@ -1,70 +1,30 @@
 #!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status
 set -e
 
-# --- Configuration Section ---
+# Generate a strong, 32-character random password
+# We use 'tr' to remove special characters that might break in SQL/URLs
+VAULT_ADMIN_PASS=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 
-# 1. Read services from the environment variable (space-separated string)
-# Example: SERVICES="funkwhale_service auth_service analytics_service"
-# We convert the space-separated string into a bash array.
-if [ -z "$SERVICES" ]; then
-    echo "ERROR: The SERVICES environment variable is not set or empty. Exiting." >&2
-    exit 1
-fi
+# --- PRINT THE PASSWORD TO THE CONSOLE ---
+# This is the crucial part for your automation.
+# You can 'grep' for this line in your logs.
+echo "------------------------------------------------"
+echo "---"
+echo "--- GENERATED VAULT_ADMIN PASSWORD: $VAULT_ADMIN_PASS"
+echo "---"
+echo "------------------------------------------------"
 
-# Convert space-separated string ENV var into a bash array
-read -r -a SERVICES <<< "$SERVICES"
+# Run the SQL commands to create the user and grant permissions
+# Note: We are using the default 'postgres' superuser to create this new role.
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE ROLE vault_admin WITH LOGIN PASSWORD '$VAULT_ADMIN_PASS';
+    ALTER ROLE vault_admin CREATEROLE;
 
-echo "Detected services: ${SERVICES[@]}"
+    -- Grant broad permissions. Adjust these to be more restrictive if needed.
+    GRANT pg_write_all_data TO vault_admin;
+    GRANT pg_read_all_data TO vault_admin;
 
-# --- Execution Section ---
-
-echo "--- Starting PostgreSQL Multi-Database and User Initialization ---"
-
-if [ -z "$POSTGRES_PASSWORD" ]; then
-    echo "ERROR: The POSTGRES_PASSWORD environment variable is not set. Exiting." >&2
-    exit 1
-fi
-
-export PGPASSWORD="$POSTGRES_PASSWORD"
-
-for SERVICE_PREFIX in "${SERVICES[@]}"; do
-    # Take the second element after splitting by : for SERVICE_PREFIX
-    # Example: for "funkwhale_service:testpass", SERVICE_PREFIX="funkwhale_service"
-    PASSWORD_VALUE="${SERVICE_PREFIX#*:}"
     
-    if [ -z "$PASSWORD_VALUE" ]; then
-        echo "Error: Password for $USER_NAME is not set. Please define the environment variable $PASSWORD_VAR_NAME."
-        exit 1
-    fi
-
-    SERVICE_PREFIX="${SERVICE_PREFIX%%:*}"
-
-    echo "Preparing database for service: $SERVICE_PREFIX"
-
-    DB_NAME="${SERVICE_PREFIX}"
-    USER_NAME="${SERVICE_PREFIX}_user"
-
-    echo "Processing service: $SERVICE_PREFIX (DB: $DB_NAME, User: $USER_NAME)"
-
-    # 4. Connect to the existing 'postgres' default database using the superuser
-    # and execute both CREATE USER and CREATE DATABASE.
-    # NOTE: The SQL is wrapped in a DDL block to gracefully handle existing users/databases
-    # if the volume data is accidentally preserved, though `set -e` ensures exit on error.
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
-      
-      -- Create user with dynamic password
-      CREATE USER ${USER_NAME} WITH PASSWORD '${PASSWORD_VALUE}';
-      
-      -- Create database and set owner
-      CREATE DATABASE ${DB_NAME} OWNER ${USER_NAME};
-      
-      -- Grant privileges
-      GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${USER_NAME};
 EOSQL
-
-    echo "Service $SERVICE_PREFIX initialized successfully."
-done
-
-unset PGPASSWORD
-
-echo "--- All databases and users created. Initialization complete. ---"
