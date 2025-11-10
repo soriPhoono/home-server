@@ -7,11 +7,71 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
     networks:
-      - agent_network
+      - agent-network
     deploy:
       mode: global
       placement:
         constraints: [node.platform.os == linux]
+
+  traefik:
+    image: traefik:latest
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.traefik.address=:8080 # For the dashboard/API
+
+      # Docker Swarm Provider (Dynamic Configuration source)
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false # Only expose services with 'traefik.enable=true' label
+      - --providers.docker.swarmmode=true
+      - --providers.docker.network=traefik-public # Connects Traefik to other services
+
+      # API and Dashboard
+      - --api.dashboard=true
+      - --api.insecure=true # WARNING: Do not use in production without proper BasicAuth middleware
+
+      # ACME / Let's Encrypt setup (Optional)
+      - --certificatesresolvers.le.acme.email=your@email.com
+      - --certificatesresolvers.le.acme.storage=/acme/acme.json
+      - --certificatesresolvers.le.acme.dnschallenge=true
+      - --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53 # Recommended DNS resolvers for the challenge
+      - --certificatesresolvers.le.acme.dnschallenge.delayBeforeCheck=0 # Optional, but helps speed up the check
+
+      # Optional: Enable redirect middleware for all HTTP to HTTPS traffic
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+    ports:
+      - target: 80 # HTTP
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443 # HTTPS
+        published: 443
+        protocol: tcp
+        mode: host
+      # Port 8080 is often exposed for the dashboard/API, but not public-facing
+      # - target: 8080
+      #   published: 8080
+      #   protocol: tcp
+      #   mode: ingress
+    secrets:
+      - cf_token
+    volumes:
+      # Mount the Docker socket for service discovery (Traefik reads container labels)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount the ACME file for persistent certificates
+      - /mnt/data/traefik/acme.json:/acme/acme.json
+    environment:
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_token
+    networks:
+      - traefik-public
+    deploy:
+      mode: replicated # Can be 'global' or 'replicated'
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager # Recommended to run Traefik only on a manager node for stability
 
   portainer:
     image: portainer/portainer-ee:lts
@@ -20,9 +80,9 @@ services:
       - "9443:9443"
       - "8000:8000"
     volumes:
-      - portainer_data:/data
+      - portainer-data:/data
     networks:
-      - agent_network
+      - agent-network
     deploy:
       mode: replicated
       replicas: 1
@@ -30,9 +90,13 @@ services:
         constraints: [node.role == manager]
 
 networks:
-  agent_network:
+  agent-network:
     driver: overlay
     attachable: true
 
 volumes:
-  portainer_data:
+  portainer-data:
+
+secrets:
+  cf_token:
+    file: ../secrets/cf_token.secret
