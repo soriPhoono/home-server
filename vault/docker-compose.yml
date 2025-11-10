@@ -1,3 +1,8 @@
+# Docker Compose file to deploy HashiCorp Vault with Caddy reverse proxy integration.
+# This setup includes health checks and persistent storage for Vault data.
+#
+# Required environment variables:
+#  DOMAIN_NAME - The domain name for accessing the services.
 version: '3.8'
 
 services:

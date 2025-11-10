@@ -2,11 +2,6 @@
 # This setup uses a backend network for database services.
 #
 # Required environment variables:
-#  DB_PASSWORD - The password for the PostgreSQL database user.
-#  SERVICES - A space-separated list of service names matching 
-#    databases to create in the format database_name:database_password,
-#    the user of the database will be the same as the database name 
-#    appended with the word _user.
 #  DOMAIN_NAME - The domain name for accessing Adminer.
 version: "3.8"
 
