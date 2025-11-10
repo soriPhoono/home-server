@@ -32,6 +32,10 @@ services:
       restart_policy:
         condition: on-failure
 
+secrets:
+  postgres_password:
+    external: true
+
 volumes:
   postgres-data:
   redis-data:

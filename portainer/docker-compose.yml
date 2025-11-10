@@ -145,4 +145,4 @@ volumes:
 
 secrets:
   cf_token:
-    file: ../secrets/cf_token.secret
+    external: true
