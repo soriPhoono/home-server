@@ -20,7 +20,7 @@ services:
       - IPC_LOCK
     volumes:
       - ./config:/vault/config/
-      - vault-data:/vault/file/
+      - vault-data:/vault/data/
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
     networks:
