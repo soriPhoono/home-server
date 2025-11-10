@@ -6,7 +6,7 @@ storage "file" {
 # Listener configuration (This is how we talk to Vault)
 listener "tcp" {
   address = "0.0.0.0:8200"
-  tls_disable = "true" # Disable TLS for initial setup simplicity, BUT ENABLE FOR PRODUCTION
+  tls_disable = "false" # Disable TLS for initial setup simplicity, BUT ENABLE FOR PRODUCTION
 }
 
 # Enable the Web UI
