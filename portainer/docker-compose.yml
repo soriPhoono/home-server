@@ -134,7 +134,7 @@ services:
         protocol: tcp
         mode: host
     secrets:
-      - cf_token
+      - portainer_cf_token
     volumes:
       # Mount the Docker socket for service discovery (Traefik reads container labels)
       - /var/run/docker.sock:/var/run/docker.sock:ro
