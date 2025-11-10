@@ -93,6 +93,8 @@ networks:
   agent-network:
     driver: overlay
     attachable: true
+  traefik-public:
+    external: true
 
 volumes:
   portainer-data:
