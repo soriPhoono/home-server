@@ -1,6 +1,34 @@
 version: "3.8"
 
 services:
+  portainer:
+    image: portainer/portainer-ee:lts
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: host
+    volumes:
+      - portainer-data:/data
+    networks:
+      - agent-network
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - traefik.enable=true
+
+        - traefik.http.routers.portainer.rule=Host(`admin.cryptic-coders.net`)
+        - traefik.http.routers.portainer.entrypoints=websecure
+        - traefik.http.routers.portainer.tls=true
+        - traefik.http.routers.portainer.tls.certresolver=le
+
+        - traefik.http.services.portainer.loadbalancer.server.port=9000
+
   agent:
     image: portainer/agent:lts
     volumes:
@@ -12,6 +40,15 @@ services:
       mode: global
       placement:
         constraints: [node.platform.os == linux]
+
+  shepherd:
+    image: containrrr/shepherd
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   traefik:
     image: traefik:latest
@@ -83,7 +120,7 @@ services:
         - traefik.enable=true
 
         # Dashboard router
-        - traefik.http.routers.dashboard.rule=Host(`dashboard.swarm.localhost`)
+        - traefik.http.routers.dashboard.rule=Host(`traefik.admin.cryptic-coders.net`)
         - traefik.http.routers.dashboard.entrypoints=websecure
         - traefik.http.routers.dashboard.service=api@internal
         - traefik.http.routers.dashboard.tls=true
@@ -94,22 +131,6 @@ services:
 
         # Service hint
         - traefik.http.services.traefik.loadbalancer.server.port=8080
-
-  portainer:
-    image: portainer/portainer-ee:lts
-    command: -H tcp://tasks.agent:9001 --tlsskipverify
-    ports:
-      - "9443:9443"
-      - "8000:8000"
-    volumes:
-      - portainer-data:/data
-    networks:
-      - agent-network
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
 
 networks:
   agent-network:
