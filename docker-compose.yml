@@ -1,0 +1,3 @@
+include:
+  - portainer/docker-compose.yml
+  - backend/docker-compose.yml

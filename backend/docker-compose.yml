@@ -22,11 +22,6 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   redis:
     image: library/redis:latest
@@ -47,11 +42,6 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   adminer:
     image: adminer:latest
@@ -75,12 +65,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
+    
 secrets:
   postgres_password:
     external: true
