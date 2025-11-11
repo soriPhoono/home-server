@@ -75,7 +75,7 @@ volumes:
   redis-data:
 
 networks:
-  backend_default:
+  backend-default:
     external: true
   traefik-public:
     external: true
