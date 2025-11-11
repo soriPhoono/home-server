@@ -60,6 +60,7 @@ services:
         mode: host
     networks:
       - backend-default
+      - traefik-public
     deploy:
       replicas: 1
       placement:
