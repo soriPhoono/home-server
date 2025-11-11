@@ -51,6 +51,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
     ports:
       - target: 8080
         published: 8080
