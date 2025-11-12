@@ -40,7 +40,7 @@ else
     # Create database
     >&2 echo "Database $DB_NAME does not exist. Creating it now..."
     PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
-        -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+        -c "CREATE DATABASE $DB_NAME OWNER $DB_OWNER;"
     >&2 echo "Database $DB_NAME created successfully."
 fi
 
