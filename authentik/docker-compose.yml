@@ -16,15 +16,43 @@ services:
       restart_policy:
         condition: none
 
-  server:
+  worker:
     image: ghcr.io/goauthentik/server:2025.10.1
-    command: server
+    command: worker
+    depends_on:
+      - migrations
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: $$(cat /run/secrets/authentik_db_owner_password)
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/authentik_db_owner_password
       AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: $$(cat /run/secrets/authentik_secret_key)
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik_secret_key
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - authentik-media:/media
+      - authentik-certs:/certs
+      - authentik-templates:/templates
+    secrets:
+      - authentik_db_owner_password
+      - authentik_secret_key
+    networks:
+      - backend_default
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  server:
+    image: ghcr.io/goauthentik/server:2025.10.1
+    command: server
+    depends_on:
+      - migrations
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/authentik_db_owner_password
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik_secret_key
     volumes:
       - authentik-media:/media
       - authentik-templates:/templates
@@ -42,35 +70,20 @@ services:
         mode: host
     networks:
       - backend_default
+      - portainer_traefik-public
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+      labels:
+        - traefik.enable=true
 
-  worker:
-    image: ghcr.io/goauthentik/server:2025.10.1
-    command: worker
-    environment:
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: $$(cat /run/secrets/authentik_db_owner_password)
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: $$(cat /run/secrets/authentik_secret_key)
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - authentik-media:/media
-      - authentik-certs:/certs
-      - authentik-templates:/templates
-    secrets:
-      - authentik_db_owner_password
-      - authentik_secret_key
-    networks:
-      - backend_default
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+        - traefik.http.routers.authentik.rule=Host(`auth.localhost`)
+        - traefik.http.routers.authentik.entrypoints=websecure
+        - traefik.http.routers.authentik.tls=true
+        - traefik.http.routers.authentik.tls.certresolver=le
 
+        - traefik.http.services.authentik.loadbalancer.server.port=9000
 secrets:
   postgres_password:
     external: true
@@ -86,4 +99,6 @@ volumes:
 
 networks:
   backend_default:
+    external: true
+  portainer_traefik-public:
     external: true
