@@ -4,13 +4,13 @@ services:
   portainer:
     image: portainer/portainer-ee:lts
     command: -H tcp://tasks.agent:9001 --tlsskipverify
+    volumes:
+      - portainer-data:/data
     ports:
       - target: 8000
         published: 8000
         protocol: tcp
         mode: host
-    volumes:
-      - portainer-data:/data
     networks:
       - agent-network
       - traefik-public
