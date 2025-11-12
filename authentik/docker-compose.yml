@@ -19,8 +19,6 @@ services:
   server:
     image: ghcr.io/goauthentik/server:2025.10.1
     command: server
-    depends_on:
-      - migrations
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__NAME: authentik
@@ -28,14 +26,20 @@ services:
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_SECRET_KEY: $$(cat /run/secrets/authentik_secret_key)
     volumes:
-      - ./media:/media
-      - ./custom-templates:/templates
+      - authentik-media:/media
+      - authentik-templates:/templates
     secrets:
       - authentik_db_owner_password
       - authentik_secret_key
     ports:
-      - 9000:9000
-      - 9443:9443
+      - target: 9000
+        published: 9000
+        protocol: tcp
+        mode: host
+      - target: 9443
+        published: 9443
+        protocol: tcp
+        mode: host
     networks:
       - backend_default
     deploy:
@@ -46,8 +50,6 @@ services:
   worker:
     image: ghcr.io/goauthentik/server:2025.10.1
     command: worker
-    depends_on:
-      - migrations
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__NAME: authentik
@@ -56,9 +58,9 @@ services:
       AUTHENTIK_SECRET_KEY: $$(cat /run/secrets/authentik_secret_key)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./media:/media
-      - ./certs:/certs
-      - ./custom-templates:/templates
+      - authentik-media:/media
+      - authentik-certs:/certs
+      - authentik-templates:/templates
     secrets:
       - authentik_db_owner_password
       - authentik_secret_key
@@ -74,6 +76,13 @@ secrets:
     external: true
   authentik_db_owner_password:
     external: true
+  authentik_secret_key:
+    external: true
+
+volumes:
+  authentik-media:
+  authentik-templates:
+  authentik-certs:
 
 networks:
   backend_default:
