@@ -1,4 +1,76 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  
+  migrations:
+    image: postgres:18-alpine
+    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    volumes:
+      - ./init:/init:ro
+    secrets:
+      - postgres_password
+      - authentik_db_owner_password
+    networks:
+      - backend-default
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+
+  server:
+    image: ghcr.io/goauthentik/server:2025.10.1
+    command: server
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: $(cat /run/secrets/authentik_db_owner_password)
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_SECRET_KEY: $(cat /run/secrets/authentik_secret_key)
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    secrets:
+      - authentik_db_owner_password
+      - authentik_secret_key
+    ports:
+      - 9000:9000
+      - 9443:9443
+    networks:
+      - backend-default
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+  worker:
+    command: worker
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10.1}
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./media:/media
+      - ./certs:/certs
+      - ./custom-templates:/templates
+
+secrets:
+  postgres_password:
+    external: true
+  authentik_db_owner_password:
+    external: true
+
+networks:
+  backend-default:
+    external: true
