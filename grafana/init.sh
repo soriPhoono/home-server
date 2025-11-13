@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# This script initializes and deploys the Authentik stack using Docker Swarm.
+# This script initializes and deploys the Monitoring stack using Docker Swarm.
 # It creates necessary Docker secrets and networks if they do not already exist.
-# Exit immediately if a command exits with a non-zero status
+# Exit immediately if a command exits with a non-zero status.
 set -e
 
 # Create Docker secrets if they do not exist
-NAMES=("authentik_db_owner_password" "authentik_secret_key")
-VALUES=("$(openssl rand -base64 36 | tr -d '\n')" "$(openssl rand -base64 60 | tr -d '\n')")
+NAMES=()
+VALUES=()
 for i in "${!NAMES[@]}"; do
     NAME="${NAMES[$i]}"
     VALUE="${VALUES[$i]}"
@@ -20,8 +20,7 @@ for i in "${!NAMES[@]}"; do
 done
 
 # Create networks for stack if they do not exist
-NETWORKS=()
-
+NETWORKS=("monitoring_default")
 for NETWORK in "${NETWORKS[@]}"; do
     if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK}$"; then
         echo "Creating Docker network: ${NETWORK}"
@@ -32,6 +31,6 @@ for NETWORK in "${NETWORKS[@]}"; do
 done
 
 # Execute stack
-docker stack deploy -c ./authentik/docker-compose.yml authentik || { echo "Failed to deploy Authentik stack"; exit 1; }
+docker stack deploy -c ./grafana/docker-compose.yml monitoring || { echo "Failed to deploy Monitoring stack"; exit 1; }
 
-echo "Authentik stack deployed successfully."
+echo "Monitoring stack deployed successfully."
