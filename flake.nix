@@ -17,7 +17,7 @@
       formatter = pkgs.alejandra;
 
       devShells.default = pkgs.mkShell {
-        DOMAIN_NAME = "localhost";
+        DOMAIN_NAME = "cryptic-coders.net";
 
         packages = with pkgs; [
           openssl
