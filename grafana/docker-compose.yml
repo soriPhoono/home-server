@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  # prometheus:
+  #   image: prom/prometheus:v3.7.3
+  #   command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9090
+  #   volumes:
+  #     - prometheus_data:/prometheus
+  #   configs:
+  #     - source: prometheus_config
+  #       target: /etc/prometheus/prometheus.yml
+  #   networks:
+  #     - grafana_monitoring
+  #     - internal
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
+
+  # loki:
+  #   image: grafana/loki:3.5
+  #   command: -config.file=/etc/loki/config.yml
+  #   configs:
+  #     - source: loki_config
+  #       target: /etc/loki/config.yml
+  #   networks:
+  #     - grafana_monitoring
+  #     - internal
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
+
+  grafana:
+    image: grafana/grafana:12.4.0-19309364910
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: host
+    volumes:
+      - grafana_data:/var/lib/grafana
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+configs:
+  prometheus_config:
+    file: ./prometheus.yml
+  loki_config:
+    file: ./loki.yml
+
+volumes:
+  grafana_data:
+
+networks:
+  grafana_monitoring:
+    external: true
+  internal:
+    driver: overlay
+    attachable: true
