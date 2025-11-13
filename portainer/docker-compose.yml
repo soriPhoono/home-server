@@ -22,7 +22,7 @@ services:
       labels:
         - traefik.enable=true
 
-        - traefik.http.routers.portainer.rule=Host(`admin.localhost`)
+        - traefik.http.routers.portainer.rule=Host(`admin.${DOMAIN_NAME}`)
         - traefik.http.routers.portainer.entrypoints=websecure
         - traefik.http.routers.portainer.tls=true
         - traefik.http.routers.portainer.tls.certresolver=le
@@ -116,7 +116,7 @@ services:
         - traefik.enable=true
 
         # Dashboard router
-        - traefik.http.routers.dashboard.rule=Host(`traefik.admin.localhost`)
+        - traefik.http.routers.dashboard.rule=Host(`traefik.admin.${DOMAIN_NAME}`)
         - traefik.http.routers.dashboard.entrypoints=websecure
         - traefik.http.routers.dashboard.service=api@internal
         - traefik.http.routers.dashboard.tls=true

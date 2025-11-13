@@ -41,10 +41,10 @@ services:
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID: file:///run/secrets/grafana_oauth_client_id
       GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: file:///run/secrets/grafana_oauth_client_secret
       GF_AUTH_GENERIC_OAUTH_SCOPES: openid profile email
-      GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.localhost/application/o/authorize/
-      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.localhost/application/o/token/
-      GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.localhost/application/o/userinfo/
-      GF_AUTH_SIGNOUT_REDIRECT_URL: https://auth.localhost/application/o/grafana-oauth/end-session/
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.${DOMAIN_NAME}/application/o/authorize/
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.${DOMAIN_NAME}/application/o/token/
+      GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.${DOMAIN_NAME}/application/o/userinfo/
+      GF_AUTH_SIGNOUT_REDIRECT_URL: https://auth.${DOMAIN_NAME}/application/o/grafana-oauth/end-session/
       # Optionally enable auto-login (bypasses Grafana login screen)
       GF_AUTH_OAUTH_AUTO_LOGIN: true
       # Optionally map user groups to Grafana roles
@@ -64,7 +64,7 @@ services:
       labels:
         - traefik.enable=true
 
-        - traefik.http.routers.grafana.rule=Host(`monitoring.admin.localhost`)
+        - traefik.http.routers.grafana.rule=Host(`monitoring.admin.${DOMAIN_NAME}`)
         - traefik.http.routers.grafana.entrypoints=websecure
         - traefik.http.routers.grafana.tls=true
         - traefik.http.routers.grafana.tls.certresolver=le

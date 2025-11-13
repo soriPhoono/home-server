@@ -66,7 +66,7 @@ services:
       labels:
         - traefik.enable=true
 
-        - traefik.http.routers.adminer.rule=Host(`db.admin.localhost`)
+        - traefik.http.routers.adminer.rule=Host(`db.admin.${DOMAIN_NAME}`)
         - traefik.http.routers.adminer.entrypoints=websecure
         - traefik.http.routers.adminer.tls=true
         - traefik.http.routers.adminer.tls.certresolver=le
