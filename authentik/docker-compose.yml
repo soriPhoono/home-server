@@ -59,15 +59,6 @@ services:
     secrets:
       - authentik_db_owner_password
       - authentik_secret_key
-    ports:
-      - target: 9000
-        published: 9000
-        protocol: tcp
-        mode: host
-      - target: 9443
-        published: 9443
-        protocol: tcp
-        mode: host
     networks:
       - backend_default
       - portainer_traefik-public
