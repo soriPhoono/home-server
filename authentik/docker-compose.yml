@@ -69,7 +69,7 @@ services:
       labels:
         - traefik.enable=true
 
-        - traefik.http.routers.authentik.rule=Host(`auth.localhost`)
+        - traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN_NAME}`)
         - traefik.http.routers.authentik.entrypoints=websecure
         - traefik.http.routers.authentik.tls=true
         - traefik.http.routers.authentik.tls.certresolver=le
