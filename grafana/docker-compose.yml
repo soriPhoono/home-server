@@ -1,4 +1,4 @@
-version: "3.8"
+version: 3.8
 
 services:
   # prometheus:
@@ -11,7 +11,6 @@ services:
   #       target: /etc/prometheus/prometheus.yml
   #   networks:
   #     - grafana_monitoring
-  #     - internal
   #   deploy:
   #     mode: replicated
   #     replicas: 1
@@ -27,7 +26,6 @@ services:
   #       target: /etc/loki/config.yml
   #   networks:
   #     - grafana_monitoring
-  #     - internal
   #   deploy:
   #     mode: replicated
   #     replicas: 1
@@ -37,24 +35,47 @@ services:
 
   grafana:
     image: grafana/grafana:12.4.0-19309364910
-    ports:
-      - target: 3000
-        published: 3000
-        protocol: tcp
-        mode: host
+    environment:
+      GF_AUTH_GENERIC_OAUTH_ENABLED: true
+      GF_AUTH_GENERIC_OAUTH_NAME: authentik
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: file:///run/secrets/grafana_oauth_client_id
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: file:///run/secrets/grafana_oauth_client_secret
+      GF_AUTH_GENERIC_OAUTH_SCOPES: openid profile email
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.localhost/application/o/authorize/
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.localhost/application/o/token/
+      GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.localhost/application/o/userinfo/
+      GF_AUTH_SIGNOUT_REDIRECT_URL: https://auth.localhost/application/o/grafana-oauth/end-session/
+      # Optionally enable auto-login (bypasses Grafana login screen)
+      GF_AUTH_OAUTH_AUTO_LOGIN: true
+      # Optionally map user groups to Grafana roles
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: contains(groups[*], 'Grafana Admins') && 'Admin' || contains(groups[*], 'Grafana Editors') && 'Editor' || 'Viewer'
+      # Required if Grafana is running behind a reverse proxy
+      GF_SERVER_ROOT_URL: https://grafana.company
     volumes:
       - grafana_data:/var/lib/grafana
+    networks:
+      - grafana_monitoring
+      - portainer_traefik-public
     deploy:
       mode: replicated
       replicas: 1
       restart_policy:
         condition: on-failure
+      labels:
+        - traefik.enable=true
 
-configs:
-  prometheus_config:
-    file: ./prometheus.yml
-  loki_config:
-    file: ./loki.yml
+        - traefik.http.routers.grafana.rule=Host(`monitoring.admin.localhost`)
+        - traefik.http.routers.grafana.entrypoints=websecure
+        - traefik.http.routers.grafana.tls=true
+        - traefik.http.routers.grafana.tls.certresolver=le
+
+        - traefik.http.services.grafana.loadbalancer.server.port=3000
+
+# configs:
+#   prometheus_config:
+#     file: ./prometheus.yml
+#   loki_config:
+#     file: ./loki.yml
 
 volumes:
   grafana_data:
@@ -62,6 +83,5 @@ volumes:
 networks:
   grafana_monitoring:
     external: true
-  internal:
-    driver: overlay
-    attachable: true
+  portainer_traefik-public:
+    external: true
