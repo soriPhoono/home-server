@@ -9,11 +9,11 @@ set -e
 # Create postgres password secret if it doesn't exist
 NAME="postgres_password"
 VALUE=$(openssl rand -base64 36 | tr -d '\n')
-if ! docker secret ls --format '{{.Name}}' | grep -q "^postgres_password$"; then
-    echo "Creating Docker secret: postgres_password"
-    echo "$VALUE" | docker secret create postgres_password -
+if ! docker secret ls --format '{{.Name}}' | grep -q "^$NAME$"; then
+    echo "Creating Docker secret: $NAME"
+    echo "$VALUE" | docker secret create $NAME -
 else
-    echo "Docker secret postgres_password already exists. Skipping creation."
+    echo "Docker secret $NAME already exists. Skipping creation."
 fi
 
 # Create networks for stack
@@ -29,6 +29,6 @@ for NETWORK in "${NETWORKS[@]}"; do
 done
 
 # Execute stack
-docker stack deploy -c ./docker-compose.yml portainer || { echo "Failed to deploy Portainer stack"; exit 1; }
+docker stack deploy -c ./backend/docker-compose.yml backend || { echo "Failed to deploy Database stack"; exit 1; }
 
-echo "Portainer stack deployed successfully."
+echo "Database stack deployed successfully."
