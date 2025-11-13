@@ -33,6 +33,6 @@ for NETWORK in "${NETWORKS[@]}"; do
 done
 
 # Execute stack
-docker stack deploy -c ./docker-compose.yml portainer || { echo "Failed to deploy Portainer stack"; exit 1; }
+docker stack deploy -c ./portainer/docker-compose.yml portainer || { echo "Failed to deploy Portainer stack"; exit 1; }
 
 echo "Portainer stack deployed successfully."
