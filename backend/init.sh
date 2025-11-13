@@ -22,7 +22,7 @@ NETWORKS=("backend_default")
 for NETWORK in "${NETWORKS[@]}"; do
     if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK}$"; then
         echo "Creating Docker network: ${NETWORK}"
-        docker network create "${NETWORK}"
+        docker network create --attachable --driver=overlay "${NETWORK}"
     else
         echo "Docker network ${NETWORK} already exists. Skipping creation."
     fi
