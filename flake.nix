@@ -20,24 +20,46 @@
     in {
       formatter = pkgs.alejandra;
 
-      packages.default = pkgs.writeShellApplication {
-        name = "deploy-swarm.sh";
-        runtimeInputs = packages;
+      packages = with pkgs; {
+        default = writeShellApplication {
+          name = "deploy-swarm.sh";
+          runtimeInputs = packages;
 
-        text = ''
-          set -e
+          text = ''
+            set -e
 
-          echo "Running initialization scripts..."
+            echo "Running initialization scripts..."
 
-          echo "Initializing admin services..."
-          ./admin/init.sh
+            echo "Initializing admin services..."
+            ./admin/init.sh
 
-          echo "Initializing tailnet exclusive services..."
-          # ./tail/init.sh
+            echo "Initializing tailnet exclusive services..."
+            # ./tail/init.sh
 
-          echo "Initializing public services..."
-          ./public/init.sh
-        '';
+            echo "Initializing public services..."
+            ./public/init.sh
+          '';
+        };
+
+        dispose = writeShellApplication {
+          name = "teardown-swarm.sh";
+          runtimeInputs = packages;
+
+          text = ''
+            set -e
+
+            echo "Running disposal scripts..."
+
+            echo "Disposing public services..."
+            ./public/dispose.sh
+
+            echo "Disposing tailnet exclusive services..."
+            # ./tail/dispose.sh
+
+            echo "Disposing admin services..."
+            ./admin/dispose.sh
+          '';
+        };
       };
 
       devShells.default = pkgs.mkShell {

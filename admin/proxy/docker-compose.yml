@@ -11,7 +11,7 @@ services:
       - --providers.swarm.endpoint=unix:///var/run/docker.sock
       - --providers.swarm.watch=true
       - --providers.swarm.exposedbydefault=false
-      - --providers.swarm.network=reverse-proxy_public
+      - --providers.swarm.network=proxy_public
 
       # API and Dashboard
       - --api.dashboard=true
@@ -45,14 +45,14 @@ services:
         protocol: tcp
         mode: host
     secrets:
-      - reverse-proxy_traefikcf-token
+      - proxy_traefikcf-token
     volumes:
       # Mount the Docker socket for service discovery (Traefik reads container labels)
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount the ACME file for persistent certificates
       - traefik-certs:/acme
     environment:
-      - CF_DNS_API_TOKEN_FILE=/run/secrets/reverse-proxy_traefikcf-token
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/proxy_traefikcf-token
     networks:
       - public
     deploy:
@@ -86,5 +86,5 @@ volumes:
   traefik-certs:
 
 secrets:
-  reverse-proxy_traefikcf-token:
+  proxy_traefikcf-token:
     external: true

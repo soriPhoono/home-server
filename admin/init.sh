@@ -2,9 +2,9 @@
 
 set -e
 
-echo "Initializing Admin Services with Portainer stack deployment..."
-
 ./admin/reverse-proxy/init.sh
+
+echo "Initializing Admin Services with Portainer stack deployment..."
 
 # Execute stack
 docker stack deploy -c ./admin/docker-compose.yml admin \
