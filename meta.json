@@ -1,6 +1,0 @@
-{
-    "secrets": {
-        "cf_api_key": "input",
-        "backend_postgres-password": "random_string(36)"
-    }
-}

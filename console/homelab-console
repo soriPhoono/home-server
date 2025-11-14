@@ -10,8 +10,8 @@ import python_on_whales
 
 class Modes(enum.Enum):
     DOCKER = 'docker'
-    SWARM = 'swarm'
     PODMAN = 'podman'
+    SWARM = 'swarm'
     KUBERNETES = 'kubernetes'
 
 
@@ -23,8 +23,45 @@ def generate_compose_map() -> dict[str, str]:
             if file.endswith('.yaml') or file.endswith('.yml'):
                 compose_map[root.split('/')[-1]] = root
 
-    print(compose_map)
     return compose_map
+
+
+def create_secret(name: str, args: dict[str, str]) -> None:
+    print(
+        f'    Creating secret: {name}',
+        f'      Args: {args}'
+    )
+    # Placeholder
+
+
+def create_network(name: str) -> None:
+    print(
+        f'    Creating network: {name}'
+    )
+    # Placeholder
+
+
+def create_volume(name: str) -> None:
+    print(
+        f'    Creating volume: {name}'
+    )
+    # Placeholder
+
+
+def handle_metadata(stack_name: str, stack_path: str) -> None:
+    meta_file_path = os.path.join(stack_path, "meta.json")
+
+    print('  Ingesting meta.json file...')
+    with open(meta_file_path, 'r') as meta_file:
+        meta_data = dict(json.load(meta_file))
+        for secret, args in meta_data.get('secrets', {}).items():
+            create_secret(secret, args)
+
+        for network in meta_data.get('networks', []):
+            create_network(network)
+
+        for volume in meta_data.get('volumes', []):
+            create_volume(volume)
 
 
 def main():
@@ -48,33 +85,14 @@ def main():
                     # Placeholder for deployment logic
                     # e.g., python_on_whales.docker.compose.up(detach=True)
 
-                    for stack_name, dir_path in compose_map.items():
-                        print(f'Deploying stack: {stack_name} from {dir_path}')
+                    for stack_name, stack_path in compose_map.items():
+                        print(
+                            f'Deploying stack: {stack_name} from {stack_path}')
 
                         # Ingest the meta.json file if it exists
-                        meta_file_path = os.path.join(dir_path, 'meta.json')
+                        meta_file_path = os.path.join(stack_path, 'meta.json')
                         if os.path.isfile(meta_file_path):
-                            print('  Ingesting meta.json file...')
-
-                            with open(meta_file_path, 'r') as meta_file:
-                                meta_data = dict(json.load(meta_file))
-                                for secret, args in meta_data.get('secrets', {}).items():
-                                    print(
-                                        f'    Creating secret: {secret} for stack: {stack_name}'
-                                    )
-                                    # Placeholder
-
-                                for network, args in meta_data.get('networks', {}).items():
-                                    print(
-                                        f'    Creating network: {network} for stack: {stack_name}'
-                                    )
-                                    # Placeholder
-
-                                for volume, args in meta_data.get('volumes', {}).items():
-                                    print(
-                                        f'    Creating volume: {volume} for stack: {stack_name}'
-                                    )
-                                    # Placeholder
+                            handle_metadata(stack_name, stack_path)
 
                     print('Deployment complete.')
                 case 'teardown':
