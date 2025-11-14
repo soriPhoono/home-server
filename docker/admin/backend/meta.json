@@ -1,0 +1,5 @@
+{
+    "secrets": {
+        "backend_postgres-password": "random(36)"
+    }
+}

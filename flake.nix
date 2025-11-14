@@ -17,6 +17,10 @@
 
       packages = with pkgs; [
         openssl
+
+        (python3.withPackages (py-pkgs: with py-pkgs; [
+          python-on-whales
+        ]))
       ];
     in {
       formatter = pkgs.alejandra;

@@ -14,5 +14,6 @@ buildPythonApplication rec {
   build-system = [ setuptools ];
 
   dependencies = [
+    python-on-whales
   ];
 }

@@ -1,3 +1,123 @@
 #!/usr/bin/env python3
 
-print("Hello World")
+import enum
+import os
+
+import json
+
+import python_on_whales
+
+
+class Modes(enum.Enum):
+    DOCKER = 'docker'
+    SWARM = 'swarm'
+    PODMAN = 'podman'
+    KUBERNETES = 'kubernetes'
+
+
+def generate_compose_map() -> dict[str, str]:
+    compose_map = {}
+
+    for root, _, files in os.walk('./docker'):
+        for file in files:
+            if file.endswith('.yaml') or file.endswith('.yml'):
+                compose_map[root.split('/')[-1]] = root
+
+    print(compose_map)
+    return compose_map
+
+
+def main():
+    MODE = Modes.DOCKER  # Default mode
+
+    print('----------------------------------')
+    print('  Welcome to the Homelab Console  ')
+    print('----------------------------------')
+
+    print("Type 'help' to see available commands.")
+
+    while True:
+        try:
+            compose_map = generate_compose_map()
+
+            command = input('homelab> ').strip().lower()
+
+            match command:
+                case 'deploy':
+                    print(f'Deploying homelab stack using {MODE.value}...')
+                    # Placeholder for deployment logic
+                    # e.g., python_on_whales.docker.compose.up(detach=True)
+
+                    for stack_name, dir_path in compose_map.items():
+                        print(f'Deploying stack: {stack_name} from {dir_path}')
+
+                        # Ingest the meta.json file if it exists
+                        meta_file_path = os.path.join(dir_path, 'meta.json')
+                        if os.path.isfile(meta_file_path):
+                            print('  Ingesting meta.json file...')
+
+                            with open(meta_file_path, 'r') as meta_file:
+                                meta_data = dict(json.load(meta_file))
+                                for secret, args in meta_data.get('secrets', {}).items():
+                                    print(
+                                        f'    Creating secret: {secret} for stack: {stack_name}'
+                                    )
+                                    # Placeholder
+
+                                for network, args in meta_data.get('networks', {}).items():
+                                    print(
+                                        f'    Creating network: {network} for stack: {stack_name}'
+                                    )
+                                    # Placeholder
+
+                                for volume, args in meta_data.get('volumes', {}).items():
+                                    print(
+                                        f'    Creating volume: {volume} for stack: {stack_name}'
+                                    )
+                                    # Placeholder
+
+                    print('Deployment complete.')
+                case 'teardown':
+                    print(f'Tearing down homelab stack using {MODE.value}...')
+                    # Placeholder for teardown logic
+                    # e.g., python_on_whales.docker.compose.down()
+                    print('Teardown complete.')
+                case 'mode':
+                    if len(command.split()[1:]) == 0:
+                        print(f'Current mode: {MODE.value}')
+                    else:
+                        new_mode = command.split()[1].lower()
+                        if new_mode in Modes._value2member_map_:
+                            MODE = Modes(new_mode)
+                            print(f'Mode changed to: {MODE.value}')
+                        else:
+                            print(
+                                f"Invalid mode: '{new_mode}'. Available modes are: {
+                                    [mode.value for mode in Modes]
+                                }"
+                            )
+                case 'help':
+                    print('Available commands:')
+                    print('---------------------------------------')
+                    print('  deploy - Deploy the homelab stack using Docker Compose')
+                    print('  teardown - Tear down the homelab stack')
+                    print(
+                        '  mode - Show/Change the current container orchestration mode'
+                    )
+                    print('  help - Show this help message')
+                    print('  quit - Exit the console')
+                    print('---------------------------------------')
+                case 'quit':
+                    print('Exiting Homelab Console. Goodbye!')
+                    break
+                case _:
+                    print(
+                        f"Unknown command: '{command}'. Type 'help' for a list of commands."
+                    )
+        except KeyboardInterrupt:
+            print('\nExiting Homelab Console. Goodbye!')
+            break
+
+
+if __name__ == '__main__':
+    main()
