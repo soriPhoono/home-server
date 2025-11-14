@@ -6,7 +6,7 @@ if [[ ! -d ./secrets ]]; then
     mkdir ./secrets
 fi
 
-read -rp "Enter your Cloudflare API Token: " cf_token
+read -srp "Enter your Cloudflare API Token: " cf_token
 
 echo
 echo "Using Cloudflare API Token: ****${cf_token: -4}"
