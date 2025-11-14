@@ -13,7 +13,7 @@ services:
         mode: host
     networks:
       - agent-network
-      - portainer_traefik-public
+      - traefik-public
     deploy:
       mode: replicated
       replicas: 1
@@ -105,7 +105,7 @@ services:
     environment:
       - CF_DNS_API_TOKEN_FILE=/run/secrets/portainer_cf_token
     networks:
-      - portainer_traefik-public
+      - traefik-public
     deploy:
       mode: replicated # Can be 'global' or 'replicated'
       replicas: 1
@@ -141,4 +141,4 @@ volumes:
 
 secrets:
   portainer_cf_token:
-    file: ./secrets/cloudflare_api_token.txt
+    file: ../secrets/cloudflare_api_token.txt
