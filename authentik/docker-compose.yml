@@ -79,9 +79,9 @@ secrets:
   postgres_password:
     external: true
   authentik_db_owner_password:
-    environment: AUTHENTIK_DB_OWNER_PASSWORD
+    external: true
   authentik_secret_key:
-    environment: AUTHENTIK_SECRET_KEY
+    external: true
 
 volumes:
   authentik-media:
