@@ -5,7 +5,10 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+echo "Initializing Monitoring stack..."
+
 # Execute stack
-docker stack deploy -c ./monitoring/docker-compose.yml monitoring || { echo "Failed to deploy Monitoring stack"; exit 1; }
+docker stack deploy -c ./admin/monitoring/docker-compose.yml monitoring || { echo "Failed to deploy Monitoring stack"; exit 1; }
 
 echo "Monitoring stack deployed successfully."
+echo

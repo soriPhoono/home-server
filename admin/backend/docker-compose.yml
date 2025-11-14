@@ -8,11 +8,11 @@ services:
       retries: 5
       start_period: 30s # Give the DB time to initialize before checking
     secrets: 
-      - postgres_password
+      - backend_postgres-password
     volumes:
       - postgres-data:/var/lib/postgresql
     environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_PASSWORD_FILE: /run/secrets/backend_postgres-password
     networks:
       - default
     deploy:
@@ -55,7 +55,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     networks:
       - default
-      - portainer_traefik-public
+      - reverse-proxy_public
     deploy:
       replicas: 1
       placement:
@@ -74,7 +74,7 @@ services:
         - traefik.http.services.adminer.loadbalancer.server.port=8080
     
 secrets:
-  postgres_password:
+  backend_postgres-password:
     external: true
 
 volumes:
@@ -85,5 +85,5 @@ networks:
   default:
     driver: overlay
     attachable: true
-  portainer_traefik-public:
+  reverse-proxy_public:
     external: true

@@ -41,7 +41,7 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - default
-      - portainer_traefik-public
+      - reverse-proxy_public
     deploy:
       mode: replicated
       replicas: 1
@@ -67,7 +67,7 @@ volumes:
   grafana_data:
 
 networks:
-  portainer_traefik-public:
+  reverse-proxy_public:
     external: true
   default:
     driver: overlay

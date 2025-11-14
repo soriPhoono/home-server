@@ -7,8 +7,8 @@ services:
     volumes:
       - ./init:/init:ro
     secrets:
-      - postgres_password
-      - authentik_db_owner_password
+      - backend_postgres-password
+      - auth_authentik-db-owner-password
     networks:
       - backend_default
     deploy:
@@ -33,8 +33,8 @@ services:
       - authentik-certs:/certs
       - authentik-templates:/templates
     secrets:
-      - authentik_db_owner_password
-      - authentik_secret_key
+      - auth_authentik-db-owner-password
+      - auth_authentik-secret-key
     networks:
       - backend_default
     deploy:
@@ -57,11 +57,11 @@ services:
       - authentik-media:/media
       - authentik-templates:/templates
     secrets:
-      - authentik_db_owner_password
-      - authentik_secret_key
+      - auth_authentik-db-owner-password
+      - auth_authentik-secret-key
     networks:
       - backend_default
-      - portainer_traefik-public
+      - reverse-proxy_public
     deploy:
       replicas: 1
       restart_policy:
@@ -76,11 +76,11 @@ services:
 
         - traefik.http.services.authentik.loadbalancer.server.port=9000
 secrets:
-  postgres_password:
+  backend_postgres-password:
     external: true
-  authentik_db_owner_password:
+  auth_authentik-db-owner-password:
     external: true
-  authentik_secret_key:
+  auth_authentik-secret-key:
     external: true
 
 volumes:
@@ -91,5 +91,5 @@ volumes:
 networks:
   backend_default:
     external: true
-  portainer_traefik-public:
+  reverse-proxy_public:
     external: true
