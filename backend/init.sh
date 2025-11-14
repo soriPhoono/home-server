@@ -9,6 +9,13 @@ set -e
 # Create postgres password secret if it doesn't exist
 POSTGRES_PASSWORD=$(openssl rand -base64 36 | tr -d '\n')
 
+if ! docker secret ls | grep -q postgres_password; then
+    echo "$POSTGRES_PASSWORD" | docker secret create postgres_password -
+    echo "Created Docker secret: postgres_password"
+else
+    echo "Docker secret 'postgres_password' already exists. Skipping creation."
+fi
+
 # Execute stack
 docker stack deploy -c ./backend/docker-compose.yml backend || { echo "Failed to deploy Database stack"; exit 1; }
 
