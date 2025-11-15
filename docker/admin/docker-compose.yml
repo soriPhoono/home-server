@@ -15,7 +15,7 @@ services:
         mode: host
     networks:
       - agent-network
-      - reverse-proxy_public
+      - proxy_public
     deploy:
       mode: replicated
       replicas: 1
@@ -55,7 +55,7 @@ services:
 networks:
   agent-network:
     driver: overlay
-  reverse-proxy_public:
+  proxy_public:
     external: true
 
 volumes:

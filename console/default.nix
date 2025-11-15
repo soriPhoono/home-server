@@ -9,7 +9,7 @@ buildPythonApplication rec {
   version = "0.1.0";
   pyproject = true;
 
-  src = ./console;
+  src = ./.;
 
   build-system = [ setuptools ];
 

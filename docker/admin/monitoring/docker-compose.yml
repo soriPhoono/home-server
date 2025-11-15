@@ -41,7 +41,7 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - default
-      - reverse-proxy_public
+      - proxy_public
     deploy:
       mode: replicated
       replicas: 1
@@ -67,7 +67,7 @@ volumes:
   grafana_data:
 
 networks:
-  reverse-proxy_public:
+  proxy_public:
     external: true
   default:
     driver: overlay

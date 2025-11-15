@@ -55,7 +55,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     networks:
       - default
-      - reverse-proxy_public
+      - proxy_public
     deploy:
       replicas: 1
       placement:
@@ -85,5 +85,5 @@ networks:
   default:
     driver: overlay
     attachable: true
-  reverse-proxy_public:
+  proxy_public:
     external: true

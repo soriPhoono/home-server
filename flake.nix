@@ -26,7 +26,7 @@
       formatter = pkgs.alejandra;
 
       packages = {
-        console = import ./. {
+        console = import ./console {
           inherit lib;
           inherit (pkgs) python3Packages;
         };

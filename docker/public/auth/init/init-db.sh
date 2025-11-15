@@ -3,10 +3,10 @@ set -e
 
 DB_HOST=backend_postgres
 DB_USER=postgres
-DB_PASS=$(cat /run/secrets/postgres_password)
+DB_PASS=$(cat /run/secrets/backend_postgres-password)
 DB_NAME=authentik
 DB_OWNER=authentik
-DB_OWNER_PASS=$(cat /run/secrets/authentik_db_owner_password)
+DB_OWNER_PASS=$(cat /run/secrets/auth_authentik-db-owner-password)
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL at $DB_HOST to become available..."

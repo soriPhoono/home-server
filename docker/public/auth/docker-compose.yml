@@ -61,7 +61,7 @@ services:
       - auth_authentik-secret-key
     networks:
       - backend_default
-      - reverse-proxy_public
+      - proxy_public
     deploy:
       replicas: 1
       restart_policy:
@@ -91,5 +91,5 @@ volumes:
 networks:
   backend_default:
     external: true
-  reverse-proxy_public:
+  proxy_public:
     external: true

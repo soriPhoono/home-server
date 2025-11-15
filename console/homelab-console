@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 
-import enum
 import os
+import enum
+import string
+import random
 
 import json
+import getpass
 
-import python_on_whales
+from python_on_whales import docker
 
 
 class Modes(enum.Enum):
     DOCKER = 'docker'
-    PODMAN = 'podman'
     SWARM = 'swarm'
-    KUBERNETES = 'kubernetes'
+
+
+MODE = Modes.DOCKER  # Default mode
 
 
 def generate_compose_map() -> dict[str, str]:
@@ -26,75 +30,183 @@ def generate_compose_map() -> dict[str, str]:
     return compose_map
 
 
-def create_secret(name: str, args: dict[str, str]) -> None:
-    print(
-        f'    Creating secret: {name}',
-        f'      Args: {args}'
-    )
+def create_network(name: str, args: dict[str, str]) -> None:
+    print(f'    -- Creating network: {name}')
+    print(f'      -- Args: {args}')
     # Placeholder
 
-
-def create_network(name: str) -> None:
-    print(
-        f'    Creating network: {name}'
-    )
-    # Placeholder
+    if len(docker.network.list(filters=[('name', name)])) == 0:
+        docker.network.create(
+            name,
+            True if MODE == Modes.SWARM else False,
+            'overlay' if MODE == Modes.SWARM else None,
+            subnet=args.get('subnet', None)
+        )
+        print(f'      -- Created network: {name}')
+    else:
+        print(f'      -- Network already exists: {name}')
 
 
 def create_volume(name: str) -> None:
-    print(
-        f'    Creating volume: {name}'
-    )
+    print(f'    -- Creating volume: {name}')
     # Placeholder
 
+    if len(docker.volume.list(filters=[('name', name)])) == 0:
+        docker.volume.create(name)
+        print(
+            f'        -- Created volume: {name}'
+        )
+    else:
+        print(f'      -- Volume already exists: {name}')
 
-def handle_metadata(stack_name: str, stack_path: str) -> None:
-    meta_file_path = os.path.join(stack_path, "meta.json")
+
+def parse_random(input: str) -> tuple[str, int]:
+    name, value_str = input.strip(')').split('(')
+    return (name, int(value_str))
+
+
+def generate_password(length: int = 12) -> str:
+    """
+    Generates a random password string of a specified length.
+
+    The character set is specifically curated to be compatible with
+    PostgreSQL connection strings by excluding characters like
+    single quote ('), double quote ("), and backslash (\\).
+
+    Args:
+        length: The desired length of the password. Defaults to 12.
+
+    Returns:
+        A randomly generated password string.
+    """
+    if length <= 0:
+        raise ValueError("Password length must be a positive integer.")
+
+    # 1. Define the complete set of characters to choose from
+
+    # Define unsafe characters for SQL/connection strings (PostgreSQL/general compatibility)
+    unsafe_chars = "'\"\\"
+
+    # Create a safe punctuation set by excluding the unsafe characters
+    safe_punctuation = "".join(
+        c for c in string.punctuation if c not in unsafe_chars)
+
+    # Combine letters, digits, and the filtered safe punctuation
+    all_characters = string.ascii_letters + string.digits + safe_punctuation
+
+    # 2. Use random.choices to select 'length' number of characters
+    # 'choices' returns a list, which we join into a single string.
+    password = ''.join(random.choices(all_characters, k=length))
+
+    return password
+
+
+def create_secret(name: str, mode: str) -> None:
+    if MODE != Modes.SWARM:
+        raise RuntimeError(
+            "Docker must be initialized in Swarm mode to use secrets.")
+
+    print(f'    -- Creating secret: {name}')
+    print(f'      -- Mode: {mode}')
+    # Placeholder
+
+    if len(docker.secret.list(filters=[('name', name)])) == 0:
+        if not os.path.isdir('./secrets'):
+            os.mkdir('./secrets')
+
+        with open(f'./secrets/{name}.txt', 'w+') as file:
+            match mode:
+                case 'secret_input':
+                    value = getpass.getpass(f'Secret {name}> ')
+                    file.write(value)
+                case str() if mode.startswith('random'):
+                    _, length = parse_random(mode)
+                    file.write(generate_password(length))
+                case _:
+                    print(
+                        f'      -- Error: Unrecognized type: {mode} for secret: {name}')
+                    return
+
+        docker.secret.create(name, f'./secrets/{name}.txt')
+
+        print(f'      -- Created secret: {name}')
+    else:
+        print(f'      -- Secret already exists: {name}')
+
+
+def handle_metadata(create: bool, stack_name: str, stack_path: str) -> None:
+    meta_file_path = os.path.join(stack_path, 'meta.json')
 
     print('  Ingesting meta.json file...')
     with open(meta_file_path, 'r') as meta_file:
         meta_data = dict(json.load(meta_file))
-        for secret, args in meta_data.get('secrets', {}).items():
-            create_secret(secret, args)
 
-        for network in meta_data.get('networks', []):
-            create_network(network)
+        for stack in meta_data.get('dependencies', []):
+            deploy_stack(stack, os.path.join(stack_path, stack))
+
+        for network, args in meta_data.get('networks', {}).items():
+            create_network(network, args)
 
         for volume in meta_data.get('volumes', []):
             create_volume(volume)
 
+        for secret, args in meta_data.get('secrets', {}).items():
+            create_secret(secret, args)
+
+
+def deploy_stack(stack_name: str, stack_path: str) -> None:
+    print(
+        f'Deploying stack: {stack_name} from {stack_path}')
+
+    # Ingest the meta.json file if it exists
+    meta_file_path = os.path.join(stack_path, 'meta.json')
+    if os.path.isfile(meta_file_path):
+        handle_metadata(True, stack_name, stack_path)
+
+    # Create the stack after dependencies have been created
+    if len(list(filter(
+            lambda stack: stack == stack_name,
+            docker.stack.list()
+    ))) == 0:
+        docker.stack.deploy(
+            stack_name,
+            os.path.join(stack_path, 'docker-compose.yml')
+        )
+
+
+def deploy() -> None:
+    compose_map = generate_compose_map()
+
+    print(f'Deploying homelab stack using {MODE.value}...')
+    # Placeholder for deployment logic
+    # e.g., python_on_whales.docker.compose.up(detach=True)
+
+    for stack_name, stack_path in compose_map.items():
+        deploy_stack(stack_name, stack_path)
+
+    print('Deployment complete.')
+
 
 def main():
-    MODE = Modes.DOCKER  # Default mode
+    global MODE
+    MODE = Modes.SWARM if docker.system.info(
+    ).swarm.local_node_state == 'active' else Modes.DOCKER
 
     print('----------------------------------')
     print('  Welcome to the Homelab Console  ')
     print('----------------------------------')
-
+    print(f'  CWD: {os.getcwd()}')
+    print('----------------------------------')
+    print()
     print("Type 'help' to see available commands.")
 
     while True:
         try:
-            compose_map = generate_compose_map()
-
             command = input('homelab> ').strip().lower()
 
             match command:
                 case 'deploy':
-                    print(f'Deploying homelab stack using {MODE.value}...')
-                    # Placeholder for deployment logic
-                    # e.g., python_on_whales.docker.compose.up(detach=True)
-
-                    for stack_name, stack_path in compose_map.items():
-                        print(
-                            f'Deploying stack: {stack_name} from {stack_path}')
-
-                        # Ingest the meta.json file if it exists
-                        meta_file_path = os.path.join(stack_path, 'meta.json')
-                        if os.path.isfile(meta_file_path):
-                            handle_metadata(stack_name, stack_path)
-
-                    print('Deployment complete.')
+                    deploy()
                 case 'teardown':
                     print(f'Tearing down homelab stack using {MODE.value}...')
                     # Placeholder for teardown logic
