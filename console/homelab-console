@@ -1,22 +1,14 @@
 #!/usr/bin/env python3
 
 import os
-import enum
 import string
 import random
+import shutil
 
 import json
 import getpass
 
 from python_on_whales import docker
-
-
-class Modes(enum.Enum):
-    DOCKER = 'docker'
-    SWARM = 'swarm'
-
-
-MODE = Modes.DOCKER  # Default mode
 
 
 def generate_compose_map() -> dict[str, str]:
@@ -33,13 +25,12 @@ def generate_compose_map() -> dict[str, str]:
 def create_network(name: str, args: dict[str, str]) -> None:
     print(f'    -- Creating network: {name}')
     print(f'      -- Args: {args}')
-    # Placeholder
 
     if len(docker.network.list(filters=[('name', name)])) == 0:
         docker.network.create(
             name,
-            True if MODE == Modes.SWARM else False,
-            'overlay' if MODE == Modes.SWARM else None,
+            True,
+            'overlay',
             subnet=args.get('subnet', None)
         )
         print(f'      -- Created network: {name}')
@@ -49,7 +40,6 @@ def create_network(name: str, args: dict[str, str]) -> None:
 
 def create_volume(name: str) -> None:
     print(f'    -- Creating volume: {name}')
-    # Placeholder
 
     if len(docker.volume.list(filters=[('name', name)])) == 0:
         docker.volume.create(name)
@@ -65,47 +55,23 @@ def parse_random(input: str) -> tuple[str, int]:
     return (name, int(value_str))
 
 
-def generate_password(length: int = 12) -> str:
-    """
-    Generates a random password string of a specified length.
-
-    The character set is specifically curated to be compatible with
-    PostgreSQL connection strings by excluding characters like
-    single quote ('), double quote ("), and backslash (\\).
-
-    Args:
-        length: The desired length of the password. Defaults to 12.
-
-    Returns:
-        A randomly generated password string.
-    """
+def generate_password(length: int) -> str:
     if length <= 0:
         raise ValueError("Password length must be a positive integer.")
 
-    # 1. Define the complete set of characters to choose from
-
-    # Define unsafe characters for SQL/connection strings (PostgreSQL/general compatibility)
     unsafe_chars = "'\"\\"
 
-    # Create a safe punctuation set by excluding the unsafe characters
     safe_punctuation = "".join(
         c for c in string.punctuation if c not in unsafe_chars)
 
-    # Combine letters, digits, and the filtered safe punctuation
     all_characters = string.ascii_letters + string.digits + safe_punctuation
 
-    # 2. Use random.choices to select 'length' number of characters
-    # 'choices' returns a list, which we join into a single string.
     password = ''.join(random.choices(all_characters, k=length))
 
     return password
 
 
 def create_secret(name: str, mode: str) -> None:
-    if MODE != Modes.SWARM:
-        raise RuntimeError(
-            "Docker must be initialized in Swarm mode to use secrets.")
-
     print(f'    -- Creating secret: {name}')
     print(f'      -- Mode: {mode}')
     # Placeholder
@@ -142,7 +108,7 @@ def handle_metadata(create: bool, stack_name: str, stack_path: str) -> None:
         meta_data = dict(json.load(meta_file))
 
         for stack in meta_data.get('dependencies', []):
-            deploy_stack(stack, os.path.join(stack_path, stack))
+            deploy_stack(stack.split('/')[-1], os.path.join('./docker', stack))
 
         for network, args in meta_data.get('networks', {}).items():
             create_network(network, args)
@@ -177,7 +143,7 @@ def deploy_stack(stack_name: str, stack_path: str) -> None:
 def deploy() -> None:
     compose_map = generate_compose_map()
 
-    print(f'Deploying homelab stack using {MODE.value}...')
+    print('Deploying homelab stack...')
     # Placeholder for deployment logic
     # e.g., python_on_whales.docker.compose.up(detach=True)
 
@@ -186,16 +152,15 @@ def deploy() -> None:
 
     print('Deployment complete.')
 
+    if os.path.isdir('./secrets'):
+        shutil.rmtree('./secrets')
+
+    print('Deleted secrets directory, all secrets required have been created')
+
 
 def main():
-    global MODE
-    MODE = Modes.SWARM if docker.system.info(
-    ).swarm.local_node_state == 'active' else Modes.DOCKER
-
     print('----------------------------------')
     print('  Welcome to the Homelab Console  ')
-    print('----------------------------------')
-    print(f'  CWD: {os.getcwd()}')
     print('----------------------------------')
     print()
     print("Type 'help' to see available commands.")
@@ -208,32 +173,15 @@ def main():
                 case 'deploy':
                     deploy()
                 case 'teardown':
-                    print(f'Tearing down homelab stack using {MODE.value}...')
+                    print(f'Tearing down homelab stack...')
                     # Placeholder for teardown logic
                     # e.g., python_on_whales.docker.compose.down()
                     print('Teardown complete.')
-                case 'mode':
-                    if len(command.split()[1:]) == 0:
-                        print(f'Current mode: {MODE.value}')
-                    else:
-                        new_mode = command.split()[1].lower()
-                        if new_mode in Modes._value2member_map_:
-                            MODE = Modes(new_mode)
-                            print(f'Mode changed to: {MODE.value}')
-                        else:
-                            print(
-                                f"Invalid mode: '{new_mode}'. Available modes are: {
-                                    [mode.value for mode in Modes]
-                                }"
-                            )
                 case 'help':
                     print('Available commands:')
                     print('---------------------------------------')
                     print('  deploy - Deploy the homelab stack using Docker Compose')
                     print('  teardown - Tear down the homelab stack')
-                    print(
-                        '  mode - Show/Change the current container orchestration mode'
-                    )
                     print('  help - Show this help message')
                     print('  quit - Exit the console')
                     print('---------------------------------------')
