@@ -24,9 +24,9 @@ services:
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/authentik_db_owner_password
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/auth_authentik-db-owner-password
       AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/auth_authentik-secret-key
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - authentik-media:/media
@@ -50,9 +50,9 @@ services:
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/authentik_db_owner_password
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/auth_authentik-db-owner-password
       AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/auth_authentik-secret-key
     volumes:
       - authentik-media:/media
       - authentik-templates:/templates
