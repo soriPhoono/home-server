@@ -13,11 +13,6 @@ services:
       - /dev:/dev:ro
     networks:
       - default
-    ports:
-      - target: 8080
-        published: 8080
-        protocol: tcp
-        mode: host
     deploy:
       mode: global
       restart_policy:
@@ -30,10 +25,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      - CONTAINERS=1
-      - SERVICES=1
       - TASKS=1
-      - NODES=1
       - SWARM=1
       - EVENTS=1
       - NETWORKS=1
