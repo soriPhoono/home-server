@@ -1,0 +1,29 @@
+# Promtail configuration (example)
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  # persisted to the named volume promtail-data
+  filename: /var/lib/promtail/positions.yaml
+
+clients:
+  # Replace with your Loki service address if different
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # scrape host log files under /var/log
+  - job_name: system
+    static_configs:
+      - targets: ['localhost']
+        labels:
+          job: varlogs
+          __path__: /var/log/**/*.log
+
+  # scrape Docker container json log files (default Docker location)
+  - job_name: docker-logs
+    static_configs:
+      - targets: ['localhost']
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*.log

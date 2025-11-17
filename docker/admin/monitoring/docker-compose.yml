@@ -1,44 +1,70 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # prometheus:
-  #   image: prom/prometheus:v3.7.3
-  #   command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9090
-  #   volumes:
-  #     - prometheus_data:/prometheus
-  #   configs:
-  #     - source: prometheus_config
-  #       target: /etc/prometheus/prometheus.yml
-  #   networks:
-  #     - default
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #     placement:
-  #       constraints:>
-  #         - node.role == manager
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9090
+    volumes:
+      - prometheus-data:/prometheus
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
+    networks:
+      - default
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
 
-  # loki:
-  #   image: grafana/loki:3.5
-  #   command: -config.file=/etc/loki/config.yml
-  #   configs:
-  #     - source: loki_config
-  #       target: /etc/loki/config.yml
-  #   networks:
-  #     - default
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #     placement:
-  #       constraints:
-  #         - node.role == manager
+  promtail:
+    image: grafana/promtail:3.5
+    command: -config.file=/etc/promtail/config.yml
+    configs:
+      - source: loki-config
+        target: /etc/promtail/config.yml
+    volumes:
+      - promtail-data:/var/lib/promtail
+
+      - /var/log:/var/log:ro
+
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - default
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+  loki:
+    image: grafana/loki:3.5
+    command: -config.file=/etc/loki/config.yml
+    configs:
+      - source: loki-config
+        target: /etc/loki/config.yml
+    volumes:
+      - loki-data:/loki
+    networks:
+      - default
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
 
   grafana:
     image: grafana/grafana:12.4.0-19309364910
-    environment:     # Required if Grafana is running behind a reverse proxy
+    environment: # Required if Grafana is running behind a reverse proxy
       GF_SERVER_ROOT_URL: https://monitoring.admin.${DOMAIN_NAME}
     volumes:
-      - grafana_data:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
     networks:
       - default
       - proxy_public
@@ -57,14 +83,19 @@ services:
 
         - traefik.http.services.grafana.loadbalancer.server.port=3000
 
-# configs:
-#   prometheus_config:
-#     file: ./prometheus.yml
-#   loki_config:
-#     file: ./loki.yml
+configs:
+  prometheus-config:
+    file: ./prometheus.yml
+  promtail-config:
+    file: ./promtail.yml
+  loki-config:
+    file: ./loki.yml
 
 volumes:
-  grafana_data:
+  prometheus-data:
+  promtail-data:
+  loki-data:
+  grafana-data:
 
 networks:
   proxy_public:

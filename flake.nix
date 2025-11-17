@@ -16,8 +16,6 @@
       pkgs = nixpkgs.legacyPackages.${system};
 
       packages = with pkgs; [
-        openssl
-
         (python3.withPackages (py-pkgs: with py-pkgs; [
           python-on-whales
         ]))
@@ -25,11 +23,13 @@
     in {
       formatter = pkgs.alejandra;
 
-      packages = {
+      packages = rec {
         console = import ./console {
           inherit lib;
           inherit (pkgs) python3Packages;
         };
+        
+        default = console;
       };
 
       devShells.default = pkgs.mkShell {

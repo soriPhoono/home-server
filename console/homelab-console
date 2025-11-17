@@ -51,7 +51,7 @@ def create_volume(name: str) -> None:
 
 
 def parse_random(input: str) -> tuple[str, int]:
-    name, value_str = input.strip(')').split('(')
+    name, value_str = input.split()
     return (name, int(value_str))
 
 
@@ -110,34 +110,49 @@ def handle_metadata(create: bool, stack_name: str, stack_path: str) -> None:
         for stack in meta_data.get('dependencies', []):
             deploy_stack(stack.split('/')[-1], os.path.join('./docker', stack))
 
-        for network, args in meta_data.get('networks', {}).items():
-            create_network(network, args)
+        if create:
+            for network, args in meta_data.get('networks', {}).items():
+                create_network(network, args)
 
-        for volume in meta_data.get('volumes', []):
-            create_volume(volume)
+            for volume in meta_data.get('volumes', []):
+                create_volume(volume)
 
-        for secret, args in meta_data.get('secrets', {}).items():
-            create_secret(secret, args)
+            for secret, args in meta_data.get('secrets', {}).items():
+                create_secret(secret, args)
 
 
 def deploy_stack(stack_name: str, stack_path: str) -> None:
     print(
         f'Deploying stack: {stack_name} from {stack_path}')
 
-    # Ingest the meta.json file if it exists
-    meta_file_path = os.path.join(stack_path, 'meta.json')
-    if os.path.isfile(meta_file_path):
-        handle_metadata(True, stack_name, stack_path)
-
     # Create the stack after dependencies have been created
     if len(list(filter(
-            lambda stack: stack == stack_name,
+            lambda stack: stack.name == stack_name,
             docker.stack.list()
     ))) == 0:
+        print(f'  -- Stack {stack_name} does not exist, creating now')
+
+        # Ingest the meta.json file if it exists
+        meta_file_path = os.path.join(stack_path, 'meta.json')
+        if os.path.isfile(meta_file_path):
+            handle_metadata(True, stack_name, stack_path)
+
         docker.stack.deploy(
             stack_name,
             os.path.join(stack_path, 'docker-compose.yml')
         )
+    else:
+        print(f'  -- Stack {stack_name} exists, updating!')
+        meta_file_path = os.path.join(stack_path, 'meta.json')
+        if os.path.isfile(meta_file_path):
+            handle_metadata(False, stack_name, stack_path)
+
+        docker.stack.deploy(
+            stack_name,
+            os.path.join(stack_path, 'docker-compose.yml')
+        )
+
+    print('Processed stack: {stack_name}')
 
 
 def deploy() -> None:
@@ -173,7 +188,7 @@ def main():
                 case 'deploy':
                     deploy()
                 case 'teardown':
-                    print(f'Tearing down homelab stack...')
+                    print('Tearing down homelab stack...')
                     # Placeholder for teardown logic
                     # e.g., python_on_whales.docker.compose.down()
                     print('Teardown complete.')
