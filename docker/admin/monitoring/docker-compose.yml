@@ -2,10 +2,14 @@ version: "3.8"
 
 services:
   cadvisor:
-    image: google/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:latest
+    privileged: true
+    devices:
+      - /dev/kmsg
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
+      - /var/run:/var/run:rw
+      - /dev:/dev:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
@@ -14,12 +18,16 @@ services:
       mode: global
       restart_policy:
         condition: on-failure
+      labels:
+        - prometheus-job=cadvisor
 
   prometheus:
     image: prom/prometheus:latest
     command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - prometheus-data:/prometheus
+
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     configs:
       - source: prometheus-config
         target: /etc/prometheus/prometheus.yml
