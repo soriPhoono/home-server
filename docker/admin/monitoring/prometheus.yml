@@ -14,10 +14,14 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "grafana"
-    dns_sd_configs: 
-      - names:
-        - tasks.grafana
-        port: 3000
-        type: A
-        refresh_interval: 30s
+  - job_name: "cadvisor"
+    dockerswarm_sd_configs:
+      - role: tasks
+    relabel_configs:
+      - source_labels: [_meta_docker_task_name]
+        action: keep
+        regex: ^monitoring_cadvisor\..*$
+      - source_labels: [_meta_docker_task_name]
+        action: replace
+        target_label: instance
+        regex: ^(.*)\..*$

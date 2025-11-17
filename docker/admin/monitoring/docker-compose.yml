@@ -1,9 +1,23 @@
 version: "3.8"
 
 services:
+  cadvisor:
+    image: google/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - default
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
   prometheus:
-    image: prom/prometheus:v3.7.3
-    command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9090
+    image: prom/prometheus:latest
+    command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - prometheus-data:/prometheus
     configs:
@@ -21,10 +35,10 @@ services:
         condition: on-failure
 
   promtail:
-    image: grafana/promtail:3.5
+    image: grafana/promtail:latest
     command: -config.file=/etc/promtail/config.yml
     configs:
-      - source: loki-config
+      - source: promtail-config
         target: /etc/promtail/config.yml
     volumes:
       - promtail-data:/var/lib/promtail
@@ -41,7 +55,7 @@ services:
         condition: on-failure
 
   loki:
-    image: grafana/loki:3.5
+    image: grafana/loki:latest
     command: -config.file=/etc/loki/config.yml
     configs:
       - source: loki-config
@@ -60,7 +74,7 @@ services:
         condition: on-failure
 
   grafana:
-    image: grafana/grafana:12.4.0-19309364910
+    image: grafana/grafana:latest
     environment: # Required if Grafana is running behind a reverse proxy
       GF_SERVER_ROOT_URL: https://monitoring.admin.${DOMAIN_NAME}
     volumes:
