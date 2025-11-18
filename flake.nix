@@ -16,9 +16,10 @@
       pkgs = nixpkgs.legacyPackages.${system};
 
       packages = with pkgs; [
-        (python3.withPackages (py-pkgs: with py-pkgs; [
-          python-on-whales
-        ]))
+        (python3.withPackages (py-pkgs:
+          with py-pkgs; [
+            python-on-whales
+          ]))
       ];
     in {
       formatter = pkgs.alejandra;
@@ -28,12 +29,12 @@
           inherit lib;
           inherit (pkgs) python3Packages;
         };
-        
+
         default = console;
       };
 
       devShells.default = pkgs.mkShell {
-        DOMAIN_NAME = "localhost";
+        DOMAIN_NAME = "cryptic-coders.net";
 
         inherit packages;
       };
