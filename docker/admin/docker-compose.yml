@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   portainer:
-    image: portainer/portainer-ee:2.33.3
+    image: portainer/portainer-ce:latest
     command: -H tcp://tasks.agent:9001 --tlsskipverify
     depends_on:
       - agent

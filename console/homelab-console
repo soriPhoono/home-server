@@ -152,7 +152,7 @@ def deploy_stack(stack_name: str, stack_path: str) -> None:
             os.path.join(stack_path, 'docker-compose.yml')
         )
 
-    print('Processed stack: {stack_name}')
+    print(f'Processed stack: {stack_name}')
 
 
 def deploy() -> None:

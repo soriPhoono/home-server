@@ -4,8 +4,8 @@
         "admin/backend"
     ],
     "secrets": {
-        "backend_postgres-password": "random(36)",
-        "auth_authentik-db-owner-password": "random(36)",
-        "auth_authentik-secret-key": "random(60)"
+        "backend_postgres-password": "random 36",
+        "auth_authentik-db-owner-password": "random 36",
+        "auth_authentik-secret-key": "random 60"
     }
 }

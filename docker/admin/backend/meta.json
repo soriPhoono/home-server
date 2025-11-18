@@ -1,6 +1,6 @@
 {
     "secrets": {
-        "backend_postgres-password": "random(36)"
+        "backend_postgres-password": "random 36"
     },
     "dependencies": [
         "admin/proxy"
