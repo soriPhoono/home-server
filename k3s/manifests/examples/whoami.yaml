@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: example
+  labels:
+    name: example
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  namespace: example
+  labels:
+    app: whoami
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+        - name: whoami
+          image: traefik/whoami:latest
+          ports:
+            - name: web
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+  namespace: example
+  labels:
+    app: whoami
+spec:
+  type: ClusterIP
+  selector:
+    app: whoami
+  ports:
+    - name: web
+      port: 80
+      targetPort: web
+      protocol: TCP
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami
+  namespace: example
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`whoami.local`)
+      kind: Rule
+      services:
+        - name: whoami
+          port: 80
