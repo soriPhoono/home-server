@@ -1,0 +1,26 @@
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Kubernetes local config
+kubeconfig
+*.kubeconfig
+
+# Secrets (never commit these!)
+*.key
+*.crt
+*.pem
+secrets/
+*.secret.yaml
