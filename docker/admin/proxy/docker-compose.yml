@@ -52,8 +52,8 @@ services:
       # Mount the ACME file for persistent certificates
       - traefik-certs:/acme
     environment:
-      - CLOUDFLARE_EMAIL=soriphoono@gmail.com 
-      - CLOUDFLARE_API_KEY=file:///run/secrets/proxy_traefik-cf-token
+      - CF_API_EMAIL_FILE=/run/secrets/proxy_traefik-cf-email
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/proxy_traefik-cf-token
     networks:
       - public
     deploy:
@@ -87,5 +87,7 @@ volumes:
   traefik-certs:
 
 secrets:
+  proxy_traefik-cf-email:
+    external: true
   proxy_traefik-cf-token:
     external: true

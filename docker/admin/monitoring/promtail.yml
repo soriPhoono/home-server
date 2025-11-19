@@ -12,18 +12,8 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  # scrape host log files under /var/log
-  - job_name: system
-    static_configs:
-      - targets: ['localhost']
-        labels:
-          job: varlogs
-          __path__: /var/log/**/*.log
-
-  # scrape Docker container json log files (default Docker location)
-  - job_name: docker-logs
-    static_configs:
-      - targets: ['localhost']
-        labels:
-          job: docker
-          __path__: /var/lib/docker/containers/*/*.log
+  # Scrape Docker service logs via Docker socket
+  - job_name: swarm-services
+    docker_sd_configs:
+      - host: tcp://socket-proxy:2375
+        refresh_interval: 5s

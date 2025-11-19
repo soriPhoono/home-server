@@ -15,6 +15,13 @@ common:
   replication_factor: 1
   path_prefix: /loki
 
+limits_config:
+  ingestion_rate_mb: 15
+  ingestion_burst_size_mb: 20
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  max_global_streams_per_user: 10000
+
 schema_config:
   configs:
   - from: 2020-05-15
@@ -24,6 +31,12 @@ schema_config:
     index:
       prefix: index_
       period: 24h
+
+ingester:
+  wal:
+    dir: /loki/wal
+  chunk_idle_period: 15m
+  max_chunk_age: 1h
 
 storage_config:
   filesystem:
