@@ -33,6 +33,13 @@ For multi-node setup, see [SETUP.md](docs/SETUP.md).
 
 ### 2. Deploy Traefik
 
+**Option A: Using the deployment script (recommended)**
+```bash
+cd k3s
+./deploy.sh
+```
+
+**Option B: Manual deployment**
 ```bash
 # Apply CRDs first
 kubectl apply -f k3s/manifests/traefik/05-crds.yaml
@@ -50,10 +57,19 @@ kubectl wait --for=condition=available --timeout=120s deployment/traefik -n trae
 kubectl apply -f k3s/manifests/examples/whoami.yaml
 ```
 
+### 4. Validate Deployment
+
+```bash
+cd k3s
+./validate.sh
+```
+
 ## Project Structure
 
 ```
 k3s/
+├── deploy.sh                  # Quick deployment script
+├── validate.sh                # Validation script
 ├── manifests/
 │   ├── traefik/              # Traefik ingress controller
 │   │   ├── 00-namespace.yaml
