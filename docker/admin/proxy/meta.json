@@ -1,5 +1,0 @@
-{
-    "secrets": {
-        "proxy_traefik-cf-token": "secret_input"
-    }
-}
