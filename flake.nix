@@ -17,25 +17,43 @@
       packages = {
         create-dev-cluster = pkgs.writeShellApplication {
           name = "create-dev-cluster";
-          runtimeDependencies = with pkgs; [
-          ];
-          text = ''
-
-          '';
-        };
-        init-prod-cluster = pkgs.writeShellApplication {
-          name = "init-prod-cluster";
+          
           runtimeInputs = with pkgs; [
+            k3d
             kubectl
-            kubernetes-helm
-            helmfile
             fluxcd
           ];
+          
           text = ''
-            read -rsp "Enter your github oauth token here: " GITHUB_TOKEN
+            k3d cluster create homelab-dev \
+              -s 3 -a 6 \
+              --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
+              --k3s-arg "--kubelet-arg=fail-swap-on=false@all" \
+              --image rancher/k3s:latest
 
-            export GITHUB_TOKEN
+            kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
+            read -rp "Enter your github username here: " GITHUB_USERNAME
+            read -rp "Enter your github repository name here: " GITHUB_REPO
+            read -rp "Enter the branch you want to bootstrap to (e.g. main): " GITHUB_BRANCH
+
+            flux bootstrap github \
+              --owner="$GITHUB_USERNAME" \
+              --repository="$GITHUB_REPO" \
+              --branch="$GITHUB_BRANCH" \
+              --path=clusters/dev \
+              --personal
+          '';
+        };
+
+        init-prod-cluster = pkgs.writeShellApplication {
+          name = "init-prod-cluster";
+          
+          runtimeInputs = with pkgs; [
+            fluxcd
+          ];
+
+          text = ''
             read -rp "Enter your github username here: " GITHUB_USERNAME
             read -rp "Enter your github repository name here: " GITHUB_REPO
             read -rp "Enter the branch you want to bootstrap to (e.g. main): " GITHUB_BRANCH
@@ -49,6 +67,7 @@
           '';
         };
       };
+
       devShells.default = with pkgs;
         mkShell {
           packages = [
