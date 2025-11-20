@@ -4,26 +4,35 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = {
+  outputs = inputs @ {
+    self,
     nixpkgs,
     flake-utils,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
+
+      treefmtForSystem = inputs.treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
     in {
+      formatter = treefmtForSystem.config.build.wrapper;
+
+      checks.formatting = treefmtForSystem.config.build.check self;
+
       packages = {
         create-dev-cluster = pkgs.writeShellApplication {
           name = "create-dev-cluster";
-          
+
           runtimeInputs = with pkgs; [
             k3d
             kubectl
             fluxcd
           ];
-          
+
           text = ''
             k3d cluster create homelab-dev \
               -s 3 -a 6 \
@@ -48,7 +57,7 @@
 
         init-prod-cluster = pkgs.writeShellApplication {
           name = "init-prod-cluster";
-          
+
           runtimeInputs = with pkgs; [
             fluxcd
           ];
