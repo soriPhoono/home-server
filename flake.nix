@@ -6,43 +6,58 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs @ {
+  outputs = {
     nixpkgs,
     flake-utils,
     ...
-  }: let
-    lib = nixpkgs.lib;
-  in
+  }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-
-      dependencies = with pkgs; [
-          k3d
-          kubectl
-          kubernetes-helm
-        ];
     in {
-      packages.spawnTestEnv = pkgs.writeShellApplication {
-        name = "spawn-test-env.sh";
+      packages = {
+        create-dev-cluster = pkgs.writeShellApplication {
+          name = "create-dev-cluster";
+          runtimeDependencies = with pkgs; [
+          ];
+          text = ''
 
-        runtimeInputs = dependencies;
+          '';
+        };
+        init-prod-cluster = pkgs.writeShellApplication {
+          name = "init-prod-cluster";
+          runtimeInputs = with pkgs; [
+            kubectl
+            kubernetes-helm
+            helmfile
+            fluxcd
+          ];
+          text = ''
+            read -rsp "Enter your github oauth token here: " GITHUB_TOKEN
 
-        text = ''
-          set -euo pipefail
+            export GITHUB_TOKEN
 
-          CLUSTER_NAME=$1
+            read -rp "Enter your github username here: " GITHUB_USERNAME
+            read -rp "Enter your github repository name here: " GITHUB_REPO
+            read -rp "Enter the branch you want to bootstrap to (e.g. main): " GITHUB_BRANCH
 
-          k3d cluster create "$CLUSTER_NAME" \
-              --servers 3 \
-              --agents 6 \
-              --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
-              --volume "/sys/fs/cgroup:/sys/fs/cgroup@all" \
-              --k3s-arg "--kubelet-arg=fail-swap-on=false@all"
-        '';
+            flux bootstrap github \
+              --owner="$GITHUB_USERNAME" \
+              --repository="$GITHUB_REPO" \
+              --branch="$GITHUB_BRANCH" \
+              --path=clusters/prod \
+              --personal
+          '';
+        };
       };
-
-      devShells.default = pkgs.mkShell {
-        packages = dependencies;
-      };
+      devShells.default = with pkgs;
+        mkShell {
+          packages = [
+            k3d
+            kubectl
+            kubernetes-helm
+            helmfile
+            fluxcd
+          ];
+        };
     });
 }
