@@ -15,15 +15,17 @@
   in
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
+
+      dependencies = with pkgs; [
+          k3d
+          kubectl
+          kubernetes-helm
+        ];
     in {
       packages.spawnTestEnv = pkgs.writeShellApplication {
         name = "spawn-test-env.sh";
 
-        runtimeInputs = with pkgs; [
-          k3d
-          kubectl
-          helm
-        ];
+        runtimeInputs = dependencies;
 
         text = ''
           set -euo pipefail
@@ -40,11 +42,7 @@
       };
 
       devShells.default = pkgs.mkShell {
-        packages = with pkgs; [
-          k3d
-          kubectl
-          helm
-        ];
+        packages = dependencies;
       };
     });
 }
