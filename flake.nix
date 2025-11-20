@@ -40,7 +40,9 @@
               -s 3 -a 6 \
               --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
               --k3s-arg "--kubelet-arg=fail-swap-on=false@all" \
-              --image rancher/k3s:latest
+              --image rancher/k3s:latest \
+              --port "80:80@loadbalancer" \
+              --port "443:443@loadbalancer"
 
             kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
@@ -54,59 +56,6 @@
               --branch="$GITHUB_BRANCH" \
               --path=clusters/dev \
               --personal
-          '';
-        };
-
-        create-dev-cluster = pkgs.writeShellApplication {
-          name = "create-dev-cluster";
-
-          runtimeInputs = with pkgs; [
-            k3d
-          ];
-
-          text = ''
-            set -euo pipefail
-
-            k3d cluster create homelab-dev \
-              -s 3 -a 6 \
-              --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
-              --k3s-arg "--kubelet-arg=fail-swap-on=false@all" \
-              --image rancher/k3s:latest
-
-            echo "Waiting for all nodes to become Ready..."
-            kubectl wait --for=condition=Ready nodes --all --timeout=120s
-
-            if [ ! -d "clusters/dev/flux-system" ]; then
-              echo "ERROR: clusters/dev/flux-system does not exist."
-              echo "Make sure you've bootstrapped Flux at least once (e.g. with nix run .#create-dev-cluster),"
-              echo "and pulled the generated manifests to this repo."
-              exit 1
-            fi
-
-            echo "Applying Flux system manifests from clusters/dev/flux-system..."
-            kubectl apply -f clusters/dev/flux-system/
-
-            echo "Waiting for Flux controllers to become Ready..."
-            kubectl rollout status deployment/source-controller -n flux-system --timeout=180s
-            kubectl rollout status deployment/kustomize-controller -n flux-system --timeout=180s
-            kubectl rollout status deployment/helm-controller -n flux-system --timeout=180s
-            kubectl rollout status deployment/notification-controller -n flux-system --timeout=180s
-
-            echo "Flux controllers are Ready. They will now reconcile according to clusters/dev."
-          '';
-        };
-
-        dispose-dev-cluster = pkgs.writeShellApplication {
-          name = "dispose-dev-cluster";
-
-          runtimeInputs = with pkgs; [
-            k3d
-          ];
-
-          text = ''
-            set -euo pipefail
-
-            k3d cluster delete homelab-dev
           '';
         };
 
