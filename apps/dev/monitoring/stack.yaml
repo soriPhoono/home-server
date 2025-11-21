@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "61.x" # Pin a major version for stability
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    createNamespace: true
+  values:
+    # Simplify for local dev (disable persistent storage if you want ephemeral)
+    grafana:
+      adminPassword: "admin" # Change this or use a secret later!
+      ingress:
+        enabled: true
+        ingressClassName: traefik
+        hosts:
+          - grafana.localhost
+    prometheus:
+      prometheusSpec:
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector: {}
+        serviceMonitorNamespaceSelector: {}
