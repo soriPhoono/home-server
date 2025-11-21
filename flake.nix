@@ -17,14 +17,6 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      lib = pkgs.lib;
-
-      agenixInstallationScript = inputs.agenix-shell.lib.installationScript system {
-        secrets = {
-          DOCKER_USERNAME.file = ./secrets/docker_username.age;
-          DOCKER_PASSWORD.file = ./secrets/docker_password.age;
-        };
-      };
 
       treefmtForSystem = inputs.treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
     in {
@@ -139,13 +131,13 @@
             # 2. Check if files exist
             if [ -f "$SSH_KEY" ] && [ -f "$USER_SECRET" ] && [ -f "$PASS_SECRET" ]; then
               echo "Decrypting secrets..."
-              
+
               # 3. Decrypt directly into environment variables
-              # We suppress stderr (2>/dev/null) to hide key warnings, 
+              # We suppress stderr (2>/dev/null) to hide key warnings,
               # but if it fails, the var will just be empty.
               export DOCKER_USERNAME=$(age -d -i "$SSH_KEY" "$USER_SECRET")
               export DOCKER_PASSWORD=$(age -d -i "$SSH_KEY" "$PASS_SECRET")
-              
+
               if [ -n "$DOCKER_USERNAME" ]; then
                  echo "Secrets loaded! Docker User: $DOCKER_USERNAME"
               else
