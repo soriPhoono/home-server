@@ -1,0 +1,85 @@
+# Service Resource
+#
+# A Service is an abstract way to expose an application running on a set of Pods
+# as a network service. It provides a stable IP address and DNS name for accessing
+# Pods, even as individual Pods are created and destroyed.
+#
+# Why Services are needed:
+# - Pods are ephemeral and their IPs change when they're recreated
+# - Services provide a stable endpoint
+# - Services can load-balance traffic across multiple Pods
+# - Services enable service discovery via DNS
+#
+# Service Types:
+# - ClusterIP: Exposes the Service on an internal IP (default, used here)
+# - NodePort: Exposes the Service on each Node's IP at a static port
+# - LoadBalancer: Exposes the Service externally using a cloud provider's load balancer
+# - ExternalName: Maps the Service to a DNS name
+
+apiVersion: v1       # API version for core Kubernetes resources
+kind: Service        # The type of resource we're creating
+metadata:
+  # Name of the Service - will be used for DNS
+  # This Service will be accessible within the cluster at:
+  # whoami.homelab.svc.cluster.local
+  name: whoami
+  
+  # Namespace where this Service will be created
+  namespace: homelab
+  
+  # Labels for organizing and selecting this Service
+  labels:
+    app: whoami
+    component: web
+spec:
+  # type: Determines how the Service is exposed
+  # ClusterIP (default): Service is only accessible within the cluster
+  # This is appropriate because we'll use an Ingress for external access
+  type: ClusterIP
+  
+  # selector: Defines which Pods this Service will route traffic to
+  # Any Pod with labels matching ALL of these key-value pairs will receive traffic
+  # This should match the labels in the Deployment's Pod template
+  selector:
+    app: whoami
+  
+  # ports: Define the port mappings for this Service
+  ports:
+  - name: http        # Name of this port (optional but good practice)
+    
+    # protocol: The network protocol (TCP or UDP)
+    protocol: TCP
+    
+    # port: The port that the Service listens on
+    # This is the port that other Services/Pods will use to access this Service
+    port: 80
+    
+    # targetPort: The port on the Pod that traffic should be sent to
+    # This should match the containerPort in the Deployment
+    # Can be a number or the name of a port (if named in the Deployment)
+    targetPort: 80
+  
+  # sessionAffinity: Determines if requests from the same client go to the same Pod
+  # - None (default): Each request can go to any Pod
+  # - ClientIP: Requests from the same IP go to the same Pod
+  sessionAffinity: None
+
+# How traffic flows:
+# 1. A client in the cluster makes a request to whoami.homelab.svc.cluster.local:80
+# 2. The Service receives the request on port 80
+# 3. The Service forwards the request to port 80 on one of the Pods with label app=whoami
+# 4. The Pod's container receives the request and responds
+# 5. The response travels back through the Service to the client
+#
+# With an Ingress (see ingress.yaml):
+# 1. External request to whoami.local
+# 2. Ingress controller (Traefik) receives the request
+# 3. Ingress routes to this Service based on rules
+# 4. Service load-balances to one of the Pods
+# 5. Response flows back through the chain
+
+# Useful commands:
+# - View services: kubectl get services -n homelab
+# - View endpoints: kubectl get endpoints whoami -n homelab
+# - Describe: kubectl describe service whoami -n homelab
+# - Test from another Pod: kubectl run -n homelab test --rm -it --image=busybox -- wget -qO- http://whoami

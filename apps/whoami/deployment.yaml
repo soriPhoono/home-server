@@ -1,0 +1,114 @@
+# Deployment Resource
+#
+# A Deployment manages a set of identical Pods, ensuring that a specified number
+# of them are running at any given time. It provides declarative updates for Pods
+# and ReplicaSets.
+#
+# Key benefits:
+# - Automatic rollouts and rollbacks
+# - Self-healing: replaces failed Pods automatically
+# - Scaling: easily scale up or down
+# - Update strategies: control how new versions are deployed
+
+apiVersion: apps/v1  # API version for Deployment resources
+kind: Deployment     # The type of resource we're creating
+metadata:
+  # Name of this deployment - must be unique within the namespace
+  name: whoami
+  
+  # Namespace where this deployment will be created
+  # If omitted, it defaults to the "default" namespace
+  namespace: homelab
+  
+  # Labels for the deployment itself (not the Pods it creates)
+  labels:
+    app: whoami
+    component: web
+spec:
+  # replicas: The desired number of Pod copies to run
+  # Kubernetes will maintain this number, recreating Pods if they fail
+  replicas: 2
+  
+  # selector: Tells the Deployment which Pods it should manage
+  # This MUST match the labels in the Pod template below
+  # The Deployment controller will only manage Pods with these labels
+  selector:
+    matchLabels:
+      app: whoami
+  
+  # template: The Pod template used to create new Pods
+  # This is the blueprint for all Pods managed by this Deployment
+  template:
+    metadata:
+      # labels: Applied to each Pod created from this template
+      # These MUST match the selector.matchLabels above
+      # Services will also use these labels to find Pods
+      labels:
+        app: whoami
+    
+    # spec: The actual Pod specification
+    spec:
+      # containers: List of containers to run in each Pod
+      # A Pod can have multiple containers that share the same network and storage
+      containers:
+      - name: whoami  # Name of the container within the Pod
+        
+        # image: The Docker image to run
+        # Format: [registry/]repository[:tag]
+        # If no tag is specified, "latest" is assumed
+        image: traefik/whoami:latest
+        
+        # imagePullPolicy:
+        # - Always: Pull the image every time (useful for "latest" tag)
+        # - IfNotPresent: Only pull if not cached locally
+        # - Never: Never pull, only use local image
+        imagePullPolicy: IfNotPresent
+        
+        # ports: Expose ports from the container
+        # This is documentary (helps developers) but doesn't actually expose the port
+        # You need a Service to actually expose the port
+        ports:
+        - containerPort: 80  # The port the application listens on
+          name: http         # Optional name for the port
+          protocol: TCP      # Protocol (TCP or UDP)
+        
+        # resources: CPU and memory limits/requests
+        # requests: Guaranteed resources (used for scheduling)
+        # limits: Maximum resources (Pod is throttled/killed if exceeded)
+        resources:
+          requests:
+            memory: "32Mi"   # Minimum memory needed
+            cpu: "50m"       # Minimum CPU (50 milliCPU = 0.05 CPU)
+          limits:
+            memory: "128Mi"  # Maximum memory allowed
+            cpu: "200m"      # Maximum CPU allowed
+        
+        # livenessProbe: Checks if the container is alive
+        # If it fails, Kubernetes will restart the container
+        livenessProbe:
+          httpGet:
+            path: /          # HTTP endpoint to check
+            port: 80         # Port to check
+          initialDelaySeconds: 5   # Wait before first check
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 2        # Request timeout
+          failureThreshold: 3      # Fail after 3 consecutive failures
+        
+        # readinessProbe: Checks if the container is ready to serve traffic
+        # If it fails, the Pod is removed from Service endpoints
+        # Traffic won't be sent to Pods that aren't ready
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+
+# Notes:
+# - View deployments: kubectl get deployments -n homelab
+# - View pods: kubectl get pods -n homelab
+# - Scale replicas: kubectl scale deployment whoami --replicas=3 -n homelab
+# - View logs: kubectl logs -n homelab -l app=whoami
+# - Describe: kubectl describe deployment whoami -n homelab

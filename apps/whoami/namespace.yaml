@@ -1,0 +1,30 @@
+# Namespace Resource
+# 
+# A Namespace in Kubernetes provides a mechanism for isolating groups of resources
+# within a single cluster. It's like a virtual cluster within your physical cluster.
+#
+# Why use Namespaces?
+# - Organize resources (e.g., dev, staging, production environments)
+# - Apply resource quotas and limits per namespace
+# - Implement role-based access control (RBAC) boundaries
+# - Avoid naming collisions between teams or projects
+#
+# Default namespaces in Kubernetes:
+# - default: Resources with no namespace specified
+# - kube-system: System components (DNS, metrics, etc.)
+# - kube-public: Publicly accessible data
+# - kube-node-lease: Node heartbeat data
+
+apiVersion: v1  # API version for core Kubernetes resources
+kind: Namespace  # The type of resource we're creating
+metadata:
+  # Name of the namespace - must be unique across the cluster
+  # Use lowercase letters, numbers, and hyphens only
+  name: homelab
+  
+  # Labels help organize and select resources
+  # You can use labels for filtering with kubectl commands like:
+  # kubectl get namespaces -l environment=home
+  labels:
+    environment: home
+    managed-by: manual

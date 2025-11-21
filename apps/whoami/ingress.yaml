@@ -1,0 +1,112 @@
+# Ingress Resource
+#
+# An Ingress manages external access to Services in a cluster, typically HTTP/HTTPS.
+# It provides:
+# - URL-based routing (different URLs to different services)
+# - SSL/TLS termination
+# - Name-based virtual hosting
+# - Load balancing
+#
+# How it works:
+# - You create Ingress resources (like this file)
+# - An Ingress Controller (e.g., Traefik, Nginx, etc.) watches for Ingress resources
+# - The controller configures itself to route traffic according to the Ingress rules
+# - K3s comes with Traefik ingress controller pre-installed
+#
+# Why use Ingress instead of NodePort or LoadBalancer?
+# - Single entry point for multiple services (reduces load balancer costs)
+# - Host and path-based routing
+# - SSL/TLS termination in one place
+
+apiVersion: networking.k8s.io/v1  # API version for Ingress resources
+kind: Ingress                      # The type of resource we're creating
+metadata:
+  # Name of this Ingress resource
+  name: whoami
+  
+  # Namespace must match the Service namespace
+  namespace: homelab
+  
+  # Labels for organizing this resource
+  labels:
+    app: whoami
+  
+  # annotations: Additional configuration for the Ingress Controller
+  # Different controllers support different annotations
+  # These are examples for Traefik (k3s default)
+  annotations:
+    # Specify the ingress class (k3s uses traefik by default)
+    kubernetes.io/ingress.class: "traefik"
+    
+    # Optional: Add middleware for path stripping, authentication, etc.
+    # traefik.ingress.kubernetes.io/router.middlewares: middleware-name
+spec:
+  # rules: Define how to route incoming requests
+  # Rules map hostnames and paths to backend Services
+  rules:
+  # Each rule can specify a host (domain name)
+  - host: whoami.local  # The hostname to match (e.g., whoami.local)
+                        # You'll need to add "whoami.local" to your /etc/hosts file
+                        # pointing to your k3s node's IP address:
+                        # echo "127.0.0.1 whoami.local" | sudo tee -a /etc/hosts
+    
+    # http: Define HTTP routing rules
+    http:
+      # paths: List of path-based routes
+      paths:
+      - path: /          # Match requests starting with "/" (i.e., all requests)
+        
+        # pathType: How to match the path
+        # - Exact: Match the exact path only
+        # - Prefix: Match any path with this prefix (most common)
+        # - ImplementationSpecific: Depends on the Ingress Controller
+        pathType: Prefix
+        
+        # backend: Where to send matching requests
+        backend:
+          # service: The Service to route traffic to
+          service:
+            name: whoami      # Must match the Service name
+            port:
+              number: 80      # Must match a port in the Service
+  
+  # You can add multiple rules for different hosts:
+  # - host: another-app.local
+  #   http:
+  #     paths:
+  #     - path: /
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: another-service
+  #           port:
+  #             number: 80
+  
+  # tls: Optional TLS/SSL configuration
+  # Uncomment to enable HTTPS:
+  # tls:
+  # - hosts:
+  #   - whoami.local
+  #   secretName: whoami-tls  # Secret containing TLS certificate and key
+
+# Traffic flow with Ingress:
+# 1. User requests http://whoami.local in browser
+# 2. DNS resolves whoami.local to your k3s node IP
+# 3. Request reaches the Ingress Controller (Traefik on port 80/443)
+# 4. Ingress Controller reads this Ingress resource
+# 5. Controller matches host "whoami.local" and path "/"
+# 6. Controller forwards request to Service "whoami" on port 80
+# 7. Service load-balances to one of the "whoami" Pods
+# 8. Pod responds, and response flows back through the chain
+
+# Useful commands:
+# - View ingresses: kubectl get ingress -n homelab
+# - Describe: kubectl describe ingress whoami -n homelab
+# - Test locally: curl -H "Host: whoami.local" http://localhost
+# - View in browser: http://whoami.local (after adding to /etc/hosts)
+
+# Common troubleshooting:
+# - Check if Traefik is running: kubectl get pods -n kube-system | grep traefik
+# - Check Traefik logs: kubectl logs -n kube-system -l app.kubernetes.io/name=traefik
+# - Verify DNS/hosts: ping whoami.local
+# - Check Service endpoints: kubectl get endpoints whoami -n homelab
