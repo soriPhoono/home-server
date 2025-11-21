@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-pvr
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvr-media-library
+  namespace: homelab-pvr
+  labels:
+    type: local

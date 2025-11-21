@@ -81,7 +81,7 @@
               --owner="$GITHUB_USERNAME" \
               --repository="$GITHUB_REPO" \
               --branch="$GITHUB_BRANCH" \
-              --path=clusters/dev \
+              --path=k3s/clusters/dev \
               --personal
           '';
         };
