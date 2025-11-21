@@ -45,13 +45,39 @@
           text = ''
             set -euo pipefail
 
+            # 1. Check if the variables exist
+            if [ -z "''${DOCKER_USERNAME:-}" ] || [ -z "''${DOCKER_PASSWORD:-}" ]; then
+              echo "WARNING: DOCKER_USERNAME or DOCKER_PASSWORD not set."
+              echo "Cluster will be anonymous and may hit Docker Hub rate limits."
+              REGISTRY_FLAG=""
+            else
+              echo "Configuring cluster with Docker Hub credentials for user: $DOCKER_USERNAME"
+
+              # 2. Generate the K3s registry configuration file
+              cat <<EOF > registries.yaml
+            configs:
+              "docker.io":
+                auth:
+                  username: "$DOCKER_USERNAME"
+                  password: "$DOCKER_PASSWORD"
+            EOF
+
+              # 3. Prepare the flag for k3d
+              REGISTRY_FLAG="--registry-config=./registries.yaml"
+            fi
+
+            # 4. Create the cluster (injecting the flag)
             k3d cluster create homelab-dev \
               -s 3 -a 6 \
               --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
               --k3s-arg "--kubelet-arg=fail-swap-on=false@all" \
               --image rancher/k3s:latest \
               --port "80:80@loadbalancer" \
-              --port "443:443@loadbalancer"
+              --port "443:443@loadbalancer" \
+              "$REGISTRY_FLAG"  # <--- The flag is used here
+
+            # 5. Clean up the sensitive file
+            rm -f registries.yaml
 
             kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
