@@ -60,7 +60,7 @@
 
             # 4. Create the cluster (injecting the flag)
             k3d cluster create homelab-dev \
-              -s 3 -a 6 \
+              -s 1 -a 0 \
               --volume "/dev/mapper/crypted:/dev/mapper/crypted@all" \
               --k3s-arg "--kubelet-arg=fail-swap-on=false@all" \
               --image rancher/k3s:latest \
