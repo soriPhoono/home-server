@@ -1,4 +1,5 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+# Change v2beta1 to v2
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
@@ -8,7 +9,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "61.x" # Pin a major version for stability
+      version: "61.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -16,14 +17,13 @@ spec:
   install:
     createNamespace: true
   values:
-    # Simplify for local dev (disable persistent storage if you want ephemeral)
     grafana:
-      adminPassword: "admin" # Change this or use a secret later!
+      adminPassword: "admin"
       ingress:
         enabled: true
         ingressClassName: traefik
         hosts:
-          - grafana.localhost
+          - grafana.localdev
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
