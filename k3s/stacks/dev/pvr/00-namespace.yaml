@@ -10,3 +10,11 @@ metadata:
   namespace: homelab-pvr
   labels:
     type: local
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /mnt/data/media-library
