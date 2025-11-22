@@ -55,7 +55,7 @@ spec:
           hostPath:
             path: /mnt/data/server/config/sonarr
             type: DirectoryOrCreate
-        - name: media
+        - name: shows
           persistentVolumeClaim:
             claimName: pvr-shows-library-pvc
 ---
