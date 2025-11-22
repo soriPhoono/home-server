@@ -26,8 +26,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: media
-              mountPath: /media
+            - name: shows
+              mountPath: /shows
           resources:
             limits:
               memory: "128Mi"
@@ -57,7 +57,7 @@ spec:
             type: DirectoryOrCreate
         - name: media
           persistentVolumeClaim:
-            claimName: pvr-media-library-pvc
+            claimName: pvr-shows-library-pvc
 ---
 apiVersion: v1
 kind: Service

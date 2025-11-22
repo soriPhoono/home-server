@@ -26,8 +26,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: media
-              mountPath: /media
+            - name: movies
+              mountPath: /movies
           resources:
             limits:
               memory: "128Mi"
@@ -55,17 +55,18 @@ spec:
           hostPath:
             path: /mnt/data/server/config/radarr
             type: DirectoryOrCreate
-        - name: media
+        - name: movies
           persistentVolumeClaim:
-            claimName: pvr-media-library-pvc
+            claimName: pvr-movies-library-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: pvr-radarr-service
+  namespace: homelab-pvr
 spec:
   selector:
     app: pvr-radarr-pod
   ports:
-    - port: 8989
-      targetPort: 8989
+    - port: 7878
+      targetPort: 7878

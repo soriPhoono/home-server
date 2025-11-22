@@ -26,8 +26,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: media
-              mountPath: /media
+            - name: movies
+              mountPath: /movies
+            - name: shows
+              mountPath: /shows
           resources:
             limits:
               memory: "128Mi"
@@ -55,9 +57,12 @@ spec:
           hostPath:
             type: DirectoryOrCreate
             path: /mnt/data/server/config/jellyfin
-        - name: media
+        - name: movies
           persistentVolumeClaim:
-            claimName: pvr-media-library-pvc
+            claimName: pvr-movies-library-pvc
+        - name: shows
+          persistentVolumeClaim:
+            claimName: pvr-shows-library-pvc
 ---
 apiVersion: v1
 kind: Service

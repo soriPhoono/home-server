@@ -6,31 +6,63 @@ metadata:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: pvr-media-library
+  name: pvr-movies-library
   namespace: homelab-pvr
   labels:
-    type: pvr-media-library
+    type: pvr-movies-library
 spec:
   storageClassName: local-path
   capacity:
     storage: 100Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   hostPath:
-    path: /mnt/data/media-library
+    path: /mnt/data/media/movies
 ---
 apiVersion: v1
-kind: PersistentVolume
+kind: PersistentVolumeClaim
 metadata:
-  name: pvr-media-library-pvc
+  name: pvr-movies-library-pvc
   namespace: homelab-pvr
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100Gi
   selector:
     matchLabels:
-      type: pvr-media-library
+      type: pvr-movies-library
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvr-shows-library
+  namespace: homelab-pvr
+  labels:
+    type: pvr-shows-library
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/media/shows
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvr-shows-library-pvc
+  namespace: homelab-pvr
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  selector:
+    matchLabels:
+      type: pvr-shows-library
