@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: pvr-jellyseerr
-          image: lscr.io/linuxserver/jellyseerr:latest
+          image: fallenbagel/jellyseerr:latest
           env:
             - name: PUID
               value: "1000"
