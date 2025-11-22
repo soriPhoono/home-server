@@ -9,7 +9,7 @@ metadata:
   name: pvr-media-library
   namespace: homelab-pvr
   labels:
-    type: local
+    type: pvr-media-library
 spec:
   storageClassName: local-path
   capacity:
@@ -18,3 +18,19 @@ spec:
     - ReadWriteMany
   hostPath:
     path: /mnt/data/media-library
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvr-media-library-pvc
+  namespace: homelab-pvr
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      type: pvr-media-library

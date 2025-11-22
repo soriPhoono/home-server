@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvr-radarr-deployment
+  namespace: homelab-pvr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pvr-radarr-pod
+  template:
+    metadata:
+      labels:
+        app: pvr-radarr-pod
+    spec:
+      containers:
+        - name: pvr-radarr-container
+          image: lscr.io/linuxserver/radarr:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Etc/UTC"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 7878
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7878
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7878
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/data/server/config/radarr
+            type: DirectoryOrCreate
+        - name: media
+          persistentVolumeClaim:
+            claimName: pvr-media-library-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pvr-radarr-service
+spec:
+  selector:
+    app: pvr-radarr-pod
+  ports:
+    - port: 8989
+      targetPort: 8989
