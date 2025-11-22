@@ -33,12 +33,12 @@ spec:
             - name: shows
               mountPath: /shows
           resources:
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
             requests:
               memory: "64Mi"
               cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
           ports:
             - containerPort: 8096
               name: http
