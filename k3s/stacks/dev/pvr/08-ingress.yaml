@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pvr-ingress-rules
+  namespace: homelab-pvr
   labels:
     app.kubernetes.io/name: pvr-ingress-rules
 spec:
