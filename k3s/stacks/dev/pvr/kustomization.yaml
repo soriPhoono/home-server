@@ -8,3 +8,5 @@ resources:
   - 04-radarr.yaml
   # - 05-lidarr.yaml
   # - 06-readarr.yaml
+  - 07-jellyseerr.yaml
+  - 08-ingress.yaml
