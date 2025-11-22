@@ -60,9 +60,11 @@ spec:
         - name: movies
           persistentVolumeClaim:
             claimName: pvr-movies-library-pvc
+            readOnly: true
         - name: shows
           persistentVolumeClaim:
             claimName: pvr-shows-library-pvc
+            readOnly: true
 ---
 apiVersion: v1
 kind: Service

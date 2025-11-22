@@ -10,6 +10,8 @@ spec:
       app: pvr-sonarr-pod
   template:
     metadata:
+      name: pvr-sonarr-pod
+      namespace: homelab-pvr
       labels:
         app: pvr-sonarr-pod
     spec:
