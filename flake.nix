@@ -104,7 +104,7 @@
               --owner="$GITHUB_USERNAME" \
               --repository="$GITHUB_REPO" \
               --branch="$GITHUB_BRANCH" \
-              --path=clusters/prod \
+              --path=k3s/clusters/prod \
               --personal
           '';
         };
