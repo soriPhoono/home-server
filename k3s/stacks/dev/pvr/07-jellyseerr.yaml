@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: pvr-jellyseerr
-          image: fallenbagel/jellyseerr:latest
+          image: docker.io/fallenbagel/jellyseerr:latest
           env:
             - name: PUID
               value: "1000"
