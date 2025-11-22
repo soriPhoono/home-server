@@ -63,6 +63,5 @@ spec:
   selector:
     app: pvr-jellyseerr-pod
   ports:
-  - port: 5055
-    targetPort: 5055
-
+    - port: 5055
+      targetPort: 5055
