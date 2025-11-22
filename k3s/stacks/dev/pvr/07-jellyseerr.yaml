@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvr-jellyseerr-deployment
+  namespace: homelab-pvr
+spec:
+  selector:
+    matchLabels:
+      app: pvr-jellyseerr-pod
+  template:
+    metadata:
+      name: pvr-jellyseerr-pod
+      namespace: homelab-pvr
+      labels:
+        app: pvr-jellyseerr-pod
+    spec:
+      containers:
+        - name: pvr-jellyseerr
+          image: docker.io/fallenbagel/jellyseerr:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Etc/UTC"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5055
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5055
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5055
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      volumes:
+        - name: config
+          hostPath:
+            type: DirectoryOrCreate
+            path: /mnt/data/server/config/jellyseerr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pvr-jellyseerr-service
+  namespace: homelab-pvr
+spec:
+  selector:
+    app: pvr-jellyseerr-pod
+  ports:
+  - port: 5055
+    targetPort: 5055
+

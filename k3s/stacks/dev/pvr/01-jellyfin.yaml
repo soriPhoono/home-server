@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvr-jellyfin-deployment
+  namespace: homelab-pvr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pvr-jellyfin-pod
+  template:
+    metadata:
+      name: pvr-jellyfin-pod
+      namespace: homelab-pvr
+      labels:
+        app: pvr-jellyfin-pod
+    spec:
+      containers:
+        - name: pvr-jellyfin-container
+          image: lscr.io/linuxserver/jellyfin:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Etc/UTC"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: movies
+              mountPath: /movies
+            - name: shows
+              mountPath: /shows
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 8096
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8096
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8096
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      volumes:
+        - name: config
+          hostPath:
+            type: DirectoryOrCreate
+            path: /mnt/data/server/config/jellyfin
+        - name: movies
+          persistentVolumeClaim:
+            claimName: pvr-movies-library-pvc
+            readOnly: true
+        - name: shows
+          persistentVolumeClaim:
+            claimName: pvr-shows-library-pvc
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pvr-jellyfin-service
+  namespace: homelab-pvr
+spec:
+  selector:
+    app: pvr-jellyfin-pod
+  ports:
+    - port: 8096
+      targetPort: 8096

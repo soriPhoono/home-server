@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvr-sonarr-deployment
+  namespace: homelab-pvr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pvr-sonarr-pod
+  template:
+    metadata:
+      name: pvr-sonarr-pod
+      namespace: homelab-pvr
+      labels:
+        app: pvr-sonarr-pod
+    spec:
+      containers:
+        - name: pvr-sonarr-container
+          image: lscr.io/linuxserver/sonarr:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Etc/UTC"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: shows
+              mountPath: /shows
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8989
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8989
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8989
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/data/server/config/sonarr
+            type: DirectoryOrCreate
+        - name: shows
+          persistentVolumeClaim:
+            claimName: pvr-shows-library-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pvr-sonarr-service
+  namespace: homelab-pvr
+spec:
+  selector:
+    app: pvr-sonarr-pod
+  ports:
+    - port: 8989
+      targetPort: 8989
