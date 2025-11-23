@@ -8,7 +8,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     agenix.url = "github:ryantm/agenix";
-    agenix-shell.url = "github:soriphoono/agenix-shell";
+    agenix-shell.url = "github:aciceri/agenix-shell";
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
@@ -22,7 +22,7 @@
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
       ];
-      systems = import inputs.systems;
+      systems = with inputs; import inputs.systems;
       agenix-shell = {
         secrets = {
           # FOO.file = ./secrets/foo.age;
@@ -70,9 +70,7 @@
         pre-commit = {
           check.enable = true;
           settings.hooks = {
-            alejandra.enable = true;
-            deadnix.enable = true;
-            statix.enable = true;
+            nil.enable = true;
 
             treefmt.enable = true;
           };
