@@ -65,12 +65,16 @@
           alejandra.enable = true;
           deadnix.enable = true;
           statix.enable = true;
+
+          yamlfmt.enable = true;
         };
 
         pre-commit = {
           check.enable = true;
           settings.hooks = {
             nil.enable = true;
+
+            yamllint.enable = true;
 
             treefmt.enable = true;
           };
