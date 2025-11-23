@@ -41,6 +41,8 @@
           ];
           shellHook = ''
             source ${lib.getExe config.agenix-shell.installationScript}
+
+            ${config.pre-commit.shellHook}
           '';
         };
 
@@ -50,7 +52,10 @@
           statix.enable = true;
         };
 
-        pre-commit.settings.hooks.treefmt.enable = true;
+        pre-commit = {
+          check.enable = true;
+          settings.hooks.treefmt.enable = true;
+        };
       };
     };
 }
