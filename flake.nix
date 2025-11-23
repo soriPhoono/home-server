@@ -8,7 +8,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     agenix.url = "github:ryantm/agenix";
-    agenix-shell.url = "github:soriphoono/agenix-shell";
+    agenix-shell.url = "github:aciceri/agenix-shell";
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
