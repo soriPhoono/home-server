@@ -11,13 +11,16 @@
     agenix-shell.url = "github:soriphoono/agenix-shell";
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
+
+    git-hooks-nix.url = "github:cachix/git-hooks.nix";
   };
 
   outputs = inputs @ {flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [
-        inputs.agenix-shell.flakeModules.default
-        inputs.treefmt-nix.flakeModule
+      imports = with inputs; [
+        agenix-shell.flakeModules.default
+        treefmt-nix.flakeModule
+        git-hooks-nix.flakeModule
       ];
       systems = import inputs.systems;
       agenix-shell = {
@@ -32,12 +35,6 @@
         lib,
         ...
       }: {
-        treefmt.programs = {
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
-        };
-
         devShells.default = pkgs.mkShell {
           packages = [
             inputs.agenix.packages.${system}.default
@@ -46,6 +43,14 @@
             source ${lib.getExe config.agenix-shell.installationScript}
           '';
         };
+
+        treefmt.programs = {
+          alejandra.enable = true;
+          deadnix.enable = true;
+          statix.enable = true;
+        };
+
+        pre-commit.settings.hooks.treefmt.enable = true;
       };
     };
 }
