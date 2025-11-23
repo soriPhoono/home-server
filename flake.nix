@@ -22,7 +22,7 @@
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
       ];
-      systems = import inputs.systems;
+      systems = with inputs; import inputs.systems;
       agenix-shell = {
         secrets = {
           # FOO.file = ./secrets/foo.age;
