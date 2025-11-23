@@ -25,7 +25,8 @@
       systems = with inputs; import inputs.systems;
       agenix-shell = {
         secrets = {
-          # FOO.file = ./secrets/foo.age;
+          CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
+          CLOUDFLARE_API_TOKEN.file = ./secrets/cloudflare_api_token.age;
         };
       };
       perSystem = {
