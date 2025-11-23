@@ -36,7 +36,7 @@
         ...
       }: {
         devShells.default = pkgs.mkShell {
-          packages = [
+          packages = with inputs; [
             inputs.agenix.packages.${system}.default
           ];
           shellHook = ''
@@ -55,10 +55,6 @@
         pre-commit = {
           check.enable = true;
           settings.hooks = {
-            alejandra.enable = true;
-            deadnix.enable = true;
-            statix.enable = true;
-
             treefmt.enable = true;
           };
         };
