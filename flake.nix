@@ -35,6 +35,21 @@
         lib,
         ...
       }: {
+        packages.default = pkgs.writeShellApplication {
+          name = "deploy-script";
+
+          runtimeInputs = with pkgs; [
+            docker
+          ];
+
+          text = ''
+            set -euo pipefail
+
+            docker compose -f ./docker/admin/reverse-proxy/docker-compose.yml up -d
+            docker compose -f ./docker/admin/dns/docker-compose.yml up -d
+          '';
+        };
+
         devShells.default = pkgs.mkShell {
           packages = [
             inputs.agenix.packages.${system}.default

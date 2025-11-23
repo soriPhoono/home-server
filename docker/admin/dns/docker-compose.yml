@@ -1,0 +1,39 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    ports:
+      # DNS Ports
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      # Set the appropriate timezone for your location from
+      # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, e.g:
+      TZ: 'America/Chicago'
+      # If using Docker's default `bridge` network setting the dns listening mode should be set to 'all'
+      FTLCONF_dns_listeningMode: 'all'
+    # Volumes store your data between container upgrades
+    volumes:
+      - config:/etc/pihole
+    cap_add:
+      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Optional, if Pi-hole should get some more processing time
+      - SYS_NICE
+    networks:
+      - reverse-proxy_public
+    labels:
+      - traefik.enable=true
+
+      # Router for Pi-hole admin interface
+      - traefik.http.routers.pihole.rule=Host(`dns.admin.${DOMAIN_NAME}`)
+      - traefik.http.routers.pihole.entrypoints=websecure
+      - traefik.http.routers.pihole.tls=true
+      - traefik.http.routers.pihole.service=pihole-service
+
+      # Service definition
+      - traefik.http.services.pihole-service.loadbalancer.server.port=80
+
+networks:
+  reverse-proxy_public:
+    external: true
