@@ -1,0 +1,41 @@
+services:
+  portainer:
+    image: portainer/portainer-ee:latest
+    container_name: portainer
+    restart: unless-stopped
+    command: -H tcp://portainer-agent:9001 --tlsskipverify
+    depends_on:
+      - agent
+    volumes:
+      - portainer-data:/data
+    networks:
+      - agent-network
+      - reverse-proxy_public
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=Host(`admin.${DOMAIN_NAME}`)
+      - traefik.http.routers.portainer.entrypoints=websecure
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=le
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+  agent:
+    image: portainer/agent:lts
+    container_name: portainer-agent
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - agent-network
+  watchtower:
+    image: containrrr/watchtower:latest
+    command: --cleanup --interval 300 # TODO: check this
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  agent-network:
+  reverse-proxy_public:
+    external: true
+volumes:
+  portainer-data:
