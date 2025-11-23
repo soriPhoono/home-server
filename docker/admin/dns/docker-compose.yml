@@ -37,3 +37,6 @@ services:
 networks:
   reverse-proxy_public:
     external: true
+
+volumes:
+  config:
