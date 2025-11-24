@@ -61,6 +61,10 @@
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
 
                 docker compose -f ./docker/admin/backend/docker-compose.yml up -d
+
+                docker-compose -f ./docker/tail/pvr/docker-compose.yml up -d
+
+                docker-compose -f ./docker/public/auth/docker-compose.yml up -d
               '';
             };
 
@@ -73,6 +77,10 @@
 
               text = ''
                 set -euo pipefail
+
+                docker-compose -f ./docker/public/auth/docker-compose.yml down
+
+                docker-compose -f ./docker/tail/pvr/docker-compose.yml down
 
                 docker compose -f ./docker/admin/backend/docker-compose.yml down
 
