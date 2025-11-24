@@ -87,6 +87,8 @@ services:
     image: linuxserver/jellyfin
     container_name: jellyfin
     restart: unless-stopped
+    devices:
+      - /dev/dri:/dev/dri
     volumes:
       - jellyfin-config:/config
       - /mnt/media/Movies:/movies
