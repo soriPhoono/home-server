@@ -26,7 +26,7 @@
       agenix-shell = {
         secrets = {
           CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
-          CLOUDFLARE_API_TOKEN.file = ./secrets/cloudflare_api_token.age;
+          CLOUDFLARE_API_KEY.file = ./secrets/cloudflare_api_key.age;
         };
       };
       perSystem = {
@@ -46,7 +46,9 @@
           text = ''
             set -euo pipefail
 
-            docker compose -f ./docker/admin/reverse-proxy/docker-compose.yml up -d
+            docker plugin install grafana/loki-docker-driver:3.3.2-amd64 --alias loki --grant-all-permissions || true
+
+            docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
             docker compose -f ./docker/admin/docker-compose.yml up -d
             docker compose -f ./docker/admin/dns/docker-compose.yml up -d
           '';
@@ -56,6 +58,7 @@
           packages = [
             inputs.agenix.packages.${system}.default
           ];
+
           shellHook = ''
             source ${lib.getExe config.agenix-shell.installationScript}
 

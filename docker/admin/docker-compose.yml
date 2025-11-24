@@ -1,8 +1,8 @@
 services:
   portainer:
     image: portainer/portainer-ee:latest
-    container_name: portainer
     restart: unless-stopped
+    container_name: portainer
     command: -H tcp://portainer-agent:9001 --tlsskipverify
     depends_on:
       - agent
@@ -10,7 +10,7 @@ services:
       - portainer-data:/data
     networks:
       - agent-network
-      - reverse-proxy_public
+      - proxy_default
     labels:
       - traefik.enable=true
       - traefik.http.routers.portainer.rule=Host(`admin.${DOMAIN_NAME}`)
@@ -28,14 +28,14 @@ services:
       - agent-network
   watchtower:
     image: containrrr/watchtower:latest
-    command: --cleanup --interval 300 # TODO: check this
     container_name: watchtower
     restart: unless-stopped
+    command: --cleanup --interval 300 # TODO: check this
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 networks:
   agent-network:
-  reverse-proxy_public:
+  proxy_default:
     external: true
 volumes:
   portainer-data:
