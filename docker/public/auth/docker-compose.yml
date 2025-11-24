@@ -1,0 +1,79 @@
+version: "3.8"
+services:
+  migrations:
+    image: postgres:18-alpine
+    container_name: authentik-migrations
+    restart: never
+    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    volumes:
+      - ./init:/init:ro
+    secrets:
+      - backend_postgres-password
+      - auth_authentik-db-owner-password
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTHENTIK_DB_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+    networks:
+      - backend_default
+  worker:
+    image: ghcr.io/goauthentik/server:2025.10.1
+    command: worker
+    depends_on:
+      - migrations
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - authentik-media:/media
+      - authentik-certs:/certs
+      - authentik-templates:/templates
+    networks:
+      - backend_default
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+  server:
+    image: ghcr.io/goauthentik/server:2025.10.1
+    command: server
+    depends_on:
+      - migrations
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/auth_authentik-db-owner-password
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/auth_authentik-secret-key
+    volumes:
+      - authentik-media:/media
+      - authentik-templates:/templates
+    secrets:
+      - auth_authentik-db-owner-password
+      - auth_authentik-secret-key
+    networks:
+      - backend_default
+      - proxy_public
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN_NAME}`)
+        - traefik.http.routers.authentik.entrypoints=websecure
+        - traefik.http.routers.authentik.tls=true
+        - traefik.http.routers.authentik.tls.certresolver=le
+        - traefik.http.services.authentik.loadbalancer.server.port=9000
+volumes:
+  authentik-media:
+  authentik-templates:
+  authentik-certs:
+networks:
+  backend_default:
+    external: true
+  proxy_default:
+    external: true

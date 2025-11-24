@@ -27,7 +27,11 @@
         secrets = {
           CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
           CLOUDFLARE_API_KEY.file = ./secrets/cloudflare_api_key.age;
+
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
+
+          AUTHENTIK_DB_PASSWORD.file = ./secrets/authentik_db_password.age;
+          AUTHENTIK_SECRET_KEY.file = ./secrets/authentik_secret_key.age;
         };
       };
       perSystem = {
