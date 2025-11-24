@@ -8,9 +8,9 @@ services:
     environment:
       # Set the appropriate timezone for your location from
       # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, e.g:
-      TZ: 'America/Chicago'
+      TZ: "America/Chicago"
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'all'
-      FTLCONF_dns_listeningMode: 'all'
+      FTLCONF_dns_listeningMode: "all"
     # Volumes store your data between container upgrades
     volumes:
       - config:/etc/pihole
@@ -22,13 +22,24 @@ services:
       - "53:53/udp"
     labels:
       - traefik.enable=true
-      # Router for Pi-hole admin interface
-      - traefik.http.routers.pihole.rule=Host(`dns.admin.${DOMAIN_NAME}`)
-      - traefik.http.routers.pihole.entrypoints=websecure
-      - traefik.http.routers.pihole.service=pihole-service
-      - traefik.http.routers.pihole.tls=true
-      # Service definition
-      - traefik.http.services.pihole-service.loadbalancer.server.port=80
+      # router: redirect HTTP -> HTTPS
+      - "traefik.http.routers.pihole-http.rule=Host(`dns.admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.pihole-http.entrypoints=web"
+      - "traefik.http.routers.pihole-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # secure router (HTTPS) for entire host
+      - "traefik.http.routers.pihole.rule=Host(`dns.admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.pihole.entrypoints=websecure"
+      - "traefik.http.routers.pihole.tls=true"
+      - "traefik.http.routers.pihole.tls.certresolver=le"
+      # If you prefer only /admin behind Traefik:
+      # - "traefik.http.routers.pihole.rule=Host(`pihole.example.com`) && (PathPrefix(`/admin`) || PathPrefix(`/admin/`))"
+
+      # service port inside the container (lighttpd => 80)
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      # headers middleware so Pi-hole sees X-Forwarded-Proto=https and generates https links
+      - "traefik.http.middlewares.pihole-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.pihole.middlewares=pihole-headers"
 networks:
   proxy_default:
     external: true
