@@ -36,25 +36,46 @@
         lib,
         ...
       }: {
-        packages.default = pkgs.writeShellApplication {
-          name = "deploy-script";
+        packages = {
+          default = pkgs.writeShellApplication {
+            name = "deploy-script";
 
-          runtimeInputs = with pkgs; [
-            docker
-          ];
+            runtimeInputs = with pkgs; [
+              docker
+            ];
 
-          text = ''
-            set -euo pipefail
+            text = ''
+              set -euo pipefail
 
-            docker plugin install grafana/loki-docker-driver:3.3.2-amd64 --alias loki --grant-all-permissions || true
+              docker plugin install grafana/loki-docker-driver:3.3.2-amd64 --alias loki --grant-all-permissions || true
 
-            docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
-            docker compose -f ./docker/admin/docker-compose.yml up -d
+              docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
+              docker compose -f ./docker/admin/docker-compose.yml up -d
 
-            docker compose -f ./docker/admin/dns/docker-compose.yml up -d
+              docker compose -f ./docker/admin/dns/docker-compose.yml up -d
 
-            docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
-          '';
+              docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
+            '';
+          };
+
+          teardown = pkgs.writeShellApplication {
+            name = "teardown-script";
+
+            runtimeInputs = with pkgs; [
+              docker
+            ];
+
+            text = ''
+              set -euo pipefail
+
+              docker compose -f ./docker/admin/monitoring/docker-compose.yml down
+
+              docker compose -f ./docker/admin/dns/docker-compose.yml down
+
+              docker compose -f ./docker/admin/docker-compose.yml down
+              docker compose -f ./docker/admin/proxy/docker-compose.yml down
+            '';
+          };
         };
 
         devShells.default = pkgs.mkShell {
