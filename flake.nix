@@ -22,7 +22,7 @@
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
       ];
-      systems = with inputs; import inputs.systems;
+      systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
           CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
@@ -40,78 +40,79 @@
         config,
         lib,
         ...
-      }: {
-        packages = {
-          default = pkgs.writeShellApplication {
-            name = "deploy-script";
+      }:
+        with pkgs;
+        with lib; rec {
+          packages = {
+            default = pkgs.writeShellApplication {
+              name = "deploy-script";
 
-            runtimeInputs = with pkgs; [
-              docker
+              runtimeInputs = with pkgs; [
+                docker
+              ];
+
+              text = ''
+                set -euo pipefail
+
+                docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
+                docker compose -f ./docker/admin/docker-compose.yml up -d
+                docker compose -f ./docker/admin/dns/docker-compose.yml up -d
+
+                docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
+
+                docker compose -f ./docker/admin/backend/docker-compose.yml up -d
+              '';
+            };
+
+            teardown = pkgs.writeShellApplication {
+              name = "teardown-script";
+
+              runtimeInputs = with pkgs; [
+                docker
+              ];
+
+              text = ''
+                set -euo pipefail
+
+                docker compose -f ./docker/admin/backend/docker-compose.yml down
+
+                docker compose -f ./docker/admin/monitoring/docker-compose.yml down
+
+                docker compose -f ./docker/admin/dns/docker-compose.yml down
+                docker compose -f ./docker/admin/docker-compose.yml down
+                docker compose -f ./docker/admin/proxy/docker-compose.yml down
+              '';
+            };
+          };
+
+          devShells.default = mkShell {
+            packages = [
+              inputs.agenix.packages.${system}.default
             ];
 
-            text = ''
-              set -euo pipefail
+            shellHook = ''
+              source ${lib.getExe config.agenix-shell.installationScript}
 
-              docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
-              docker compose -f ./docker/admin/docker-compose.yml up -d
-              docker compose -f ./docker/admin/dns/docker-compose.yml up -d
-
-              docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
-
-              docker compose -f ./docker/admin/backend/docker-compose.yml up -d
+              ${config.pre-commit.shellHook}
             '';
           };
 
-          teardown = pkgs.writeShellApplication {
-            name = "teardown-script";
+          treefmt.programs = {
+            alejandra.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
 
-            runtimeInputs = with pkgs; [
-              docker
-            ];
+            yamlfmt.enable = true;
+          };
 
-            text = ''
-              set -euo pipefail
+          pre-commit = {
+            check.enable = true;
+            settings.hooks = {
+              nil.enable = true;
 
-              docker compose -f ./docker/admin/backend/docker-compose.yml down
-
-              docker compose -f ./docker/admin/monitoring/docker-compose.yml down
-
-              docker compose -f ./docker/admin/dns/docker-compose.yml down
-
-              docker compose -f ./docker/admin/docker-compose.yml down
-              docker compose -f ./docker/admin/proxy/docker-compose.yml down
-            '';
+              treefmt.enable = true;
+            };
           };
         };
-
-        devShells.default = pkgs.mkShell {
-          packages = [
-            inputs.agenix.packages.${system}.default
-          ];
-
-          shellHook = ''
-            source ${lib.getExe config.agenix-shell.installationScript}
-
-            ${config.pre-commit.shellHook}
-          '';
-        };
-
-        treefmt.programs = {
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
-
-          yamlfmt.enable = true;
-        };
-
-        pre-commit = {
-          check.enable = true;
-          settings.hooks = {
-            nil.enable = true;
-
-            treefmt.enable = true;
-          };
-        };
-      };
     };
 }

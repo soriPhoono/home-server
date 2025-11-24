@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-DB_HOST=backend_postgres
+DB_HOST=postgres
 DB_USER=postgres
-DB_PASS=$(cat /run/secrets/backend_postgres-password)
+DB_PASS=$POSTGRES_PASSWORD
 DB_NAME=authentik
 DB_OWNER=authentik
-DB_OWNER_PASS=$(cat /run/secrets/auth_authentik-db-owner-password)
+DB_OWNER_PASS=$AUTHENTIK_DB_PASSWORD
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL at $DB_HOST to become available..."
