@@ -25,8 +25,7 @@
       systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
-          CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
-          CLOUDFLARE_API_KEY.file = ./secrets/cloudflare_api_key.age;
+          CF_API_TOKEN.file = ./secrets/cf_api_token.age;
 
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
 
