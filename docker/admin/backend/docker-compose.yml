@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - default
+  redis:
+    image: library/redis:latest
+    container_name: redis
+    restart: unless-stopped
+    command: --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - redis-data:/data
+    networks:
+      - default
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - default
+      - proxy_default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.adminer.rule=Host(`db.admin.${DOMAIN_NAME}`)
+      - traefik.http.routers.adminer.entrypoints=websecure
+      - traefik.http.routers.adminer.tls=true
+      - traefik.http.routers.adminer.tls.certresolver=le
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
+volumes:
+  postgres-data:
+  redis-data:
+networks:
+  default:
+  proxy_default:
+    external: true

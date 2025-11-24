@@ -27,6 +27,7 @@
         secrets = {
           CLOUDFLARE_EMAIL.file = ./secrets/cloudflare_email.age;
           CLOUDFLARE_API_KEY.file = ./secrets/cloudflare_api_key.age;
+          POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
         };
       };
       perSystem = {
@@ -47,14 +48,13 @@
             text = ''
               set -euo pipefail
 
-              docker plugin install grafana/loki-docker-driver:3.3.2-amd64 --alias loki --grant-all-permissions || true
-
               docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
               docker compose -f ./docker/admin/docker-compose.yml up -d
-
               docker compose -f ./docker/admin/dns/docker-compose.yml up -d
 
               docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
+
+              docker compose -f ./docker/admin/backend/docker-compose.yml up -d
             '';
           };
 
@@ -67,6 +67,8 @@
 
             text = ''
               set -euo pipefail
+
+              docker compose -f ./docker/admin/backend/docker-compose.yml down
 
               docker compose -f ./docker/admin/monitoring/docker-compose.yml down
 
