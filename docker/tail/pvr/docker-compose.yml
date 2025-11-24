@@ -32,8 +32,6 @@ services:
       - prowlarr-config:/config
     networks:
       - proxy_default
-    ports:
-      - 9696:9696
     labels:
       - traefik.enable=true
       - traefik.http.routers.prowlarr.rule=Host(`downloads.tail.${DOMAIN_NAME}`) && PathPrefix(`/indexers`)
@@ -56,8 +54,6 @@ services:
       - TZ=America/Chicago
     networks:
       - proxy_default
-    ports:
-      - 8989:8989
     labels:
       - traefik.enable=true
       - traefik.http.routers.sonarr.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/shows`)
@@ -80,8 +76,6 @@ services:
       - TZ=America/Chicago
     networks:
       - proxy_default
-    ports:
-      - 7878:7878
     labels:
       - traefik.enable=true
       - traefik.http.routers.radarr.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/movies`)
@@ -101,8 +95,6 @@ services:
       - TZ=America/Chicago
     networks:
       - proxy_default
-    ports:
-      - 8096:8096
     labels:
       - traefik.enable=true
       - traefik.http.routers.jellyfin.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/watch`)
