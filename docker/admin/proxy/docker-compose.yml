@@ -33,6 +33,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
     environment:
       - CLOUDFLARE_DNS_API_TOKEN=${CF_API_TOKEN} # Cloudflare API key for DNS challenge
+      - CLOUDFLARE_ZONE_API_TOKEN=${CF_ZONE_API_TOKEN} # Cloudflare Zone API token for DNS challenge
     volumes:
       # Mount the Docker socket for service discovery (Traefik reads container labels)
       - /var/run/docker.sock:/var/run/docker.sock:ro
