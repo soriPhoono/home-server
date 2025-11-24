@@ -50,7 +50,10 @@
 
             docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
             docker compose -f ./docker/admin/docker-compose.yml up -d
+
             docker compose -f ./docker/admin/dns/docker-compose.yml up -d
+
+            docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d
           '';
         };
 
