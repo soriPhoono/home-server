@@ -67,7 +67,7 @@ services:
     command: -config.file=/etc/loki/loki.yml
     volumes:
       - ./loki.yml:/etc/loki/loki.yml:ro
-      - loki-data:/loki
+      - loki-data:/tmp/loki
     networks:
       - default
     ports:
