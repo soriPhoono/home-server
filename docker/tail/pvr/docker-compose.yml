@@ -7,7 +7,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - qbittorrent-config:/config
-      - /mnt/media/Torrent:/downloads
+      - /mnt/data/media/Torrent:/downloads
     networks:
       - proxy_default
     ports:
@@ -56,8 +56,8 @@ services:
       - prowlarr
     volumes:
       - sonarr-config:/config
-      - /mnt/media/Shows:/shows
-      - /mnt/media/Torrent:/downloads
+      - /mnt/data/media/Shows:/shows
+      - /mnt/data/media/Torrent:/downloads
     environment:
       - TZ=America/Chicago
     networks:
@@ -82,8 +82,8 @@ services:
       - prowlarr
     volumes:
       - radarr-config:/config
-      - /mnt/media/Movies:/movies
-      - /mnt/media/Torrent:/downloads
+      - /mnt/data/media/Movies:/movies
+      - /mnt/data/media/Torrent:/downloads
     environment:
       - TZ=America/Chicago
     networks:
@@ -107,8 +107,8 @@ services:
       - /dev/dri:/dev/dri
     volumes:
       - jellyfin-config:/config
-      - /mnt/media/Movies:/movies
-      - /mnt/media/Shows:/shows
+      - /mnt/data/media/Movies:/movies
+      - /mnt/data/media/Shows:/shows
     environment:
       - TZ=America/Chicago
     networks:
