@@ -15,6 +15,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   redis:
     image: library/redis:latest
     container_name: redis
@@ -29,6 +33,10 @@ services:
       - redis-data:/data
     networks:
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   adminer:
     image: adminer:latest
     container_name: adminer
@@ -44,6 +52,10 @@ services:
     networks:
       - default
       - proxy_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
       - traefik.http.routers.adminer.rule=Host(`db.admin.${DOMAIN_NAME}`)

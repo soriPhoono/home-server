@@ -11,6 +11,10 @@ services:
       AUTHENTIK_DB_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
     networks:
       - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   worker:
     image: ghcr.io/goauthentik/server:2025.10.1
     container_name: authentik-worker
@@ -31,6 +35,10 @@ services:
       - authentik-templates:/templates
     networks:
       - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   server:
     image: ghcr.io/goauthentik/server:2025.10.1
     container_name: authentik-server
@@ -51,6 +59,10 @@ services:
     networks:
       - backend_default
       - proxy_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
       - traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN_NAME}`)

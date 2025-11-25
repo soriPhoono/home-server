@@ -16,6 +16,10 @@ services:
       - NETWORKS=1
     networks:
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
@@ -27,6 +31,10 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -36,6 +44,10 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   # promtail:
   #   image: grafana/promtail:latest
   #   container_name: promtail
@@ -48,17 +60,22 @@ services:
   #     - promtail-data:/var/lib/promtail
   #   networks:
   #     - default
-  # loki:
-  #   image: grafana/loki:latest
-  #   container_name: loki
-  #   restart: unless-stopped
-  #   command: -config.file=/etc/loki/loki.yml
-  #   volumes:
-  #     - ./loki.yml:/etc/loki/loki.yml:ro
-
-  #     - loki-data:/loki
-  #   networks:
-  #     - default
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/tmp/loki
+    networks:
+      - default
+    ports:
+      - 3100:3100
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -70,6 +87,10 @@ services:
     networks:
       - default
       - proxy_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana.rule=Host(`monitoring.admin.${DOMAIN_NAME}`)

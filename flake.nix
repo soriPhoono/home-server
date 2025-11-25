@@ -54,6 +54,14 @@
               text = ''
                 set -euo pipefail
 
+                if docker plugin ls | grep -q "Loki Logging Driver"; then
+                  echo "Loki Logging Driver plugin already installed"
+                else
+                  echo "Installing Loki Logging Driver plugin"
+
+                  docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+                fi
+
                 docker compose -f ./docker/admin/proxy/docker-compose.yml up -d
                 docker compose -f ./docker/admin/docker-compose.yml up -d
                 docker compose -f ./docker/admin/dns/docker-compose.yml up -d
