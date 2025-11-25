@@ -67,15 +67,10 @@ services:
     command: -config.file=/etc/loki/loki.yml
     volumes:
       - ./loki.yml:/etc/loki/loki.yml:ro
-      - loki-data:/tmp/loki
     networks:
       - default
     ports:
       - 3100:3100
-    logging:
-      driver: loki
-      options:
-        loki-url: http://localhost:3100/loki/api/v1/push
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
