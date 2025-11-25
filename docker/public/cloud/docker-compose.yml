@@ -1,1 +1,40 @@
 services:
+  migrations:
+    image: postgres:18-alpine
+    container_name: nextcloud-migrations
+    restart: no
+    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    volumes:
+      - ./init:/init:ro
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      NEXTCLOUD_DB_PASSWORD: ${NEXTCLOUD_DB_PASSWORD}
+    networks:
+      - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
+  nextcloud-fpm:
+    image: nextcloud:production-fpm
+    container_name: nextcloud-fpm
+    restart: unless-stopped
+    depends_on:
+      - nextcloud-migrations
+    volumes:
+      - nextcloud-primary:/var/www/html
+      - nextcloud-data:/var/www/html/data
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD}
+      - REDIS_HOST=redis
+      - NEXTCLOUD_ADMIN_USER=admin
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
+      - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${DOMAIN_NAME}
+      - PHP_MEMORY_LIMIT=2048M
+      - PHP_UPLOAD_LIMIT=16384M
+    networks:
+      - default
+      - backend_default
