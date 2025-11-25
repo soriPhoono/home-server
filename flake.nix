@@ -26,6 +26,7 @@
       agenix-shell = {
         secrets = {
           CF_API_TOKEN.file = ./secrets/cf_api_token.age;
+          DNS_ADMIN_PASSWORD.file = ./secrets/dns_admin_password.age;
 
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
 

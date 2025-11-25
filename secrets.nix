@@ -4,6 +4,7 @@ let
   keys = [soriphoono];
 in {
   "secrets/cf_api_token.age".publicKeys = keys;
+  "secrets/dns_admin_password.age".publicKeys = keys;
 
   "secrets/postgres_password.age".publicKeys = keys;
 

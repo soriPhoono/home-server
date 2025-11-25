@@ -11,6 +11,9 @@ services:
       TZ: "America/Chicago"
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'all'
       FTLCONF_dns_listeningMode: "all"
+      FTLCONF_webserver_api_password: ${DNS_ADMIN_PASSWORD} # This comes from the nix shell environment
+      # Quad9 DNS servers with DNSSEC validation
+      FTLCONF_dns_upstreams: 9.9.9.9;149.112.112.112 # Points to Quad9 dns server w/out ECS but with DNSSEC
     # Volumes store your data between container upgrades
     volumes:
       - config:/etc/pihole
