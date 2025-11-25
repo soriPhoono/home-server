@@ -11,6 +11,10 @@ services:
     networks:
       - agent-network
       - proxy_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
       - traefik.http.routers.portainer.rule=Host(`admin.${DOMAIN_NAME}`)
@@ -26,6 +30,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - agent-network
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   watchtower:
     image: containrrr/watchtower:latest
     container_name: watchtower
@@ -33,6 +41,10 @@ services:
     command: --cleanup --interval 300 # TODO: check this
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
 networks:
   agent-network:
   proxy_default:
