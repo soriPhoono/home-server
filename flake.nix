@@ -43,7 +43,7 @@
         with pkgs;
         with lib; rec {
           packages = {
-            default = pkgs.writeShellApplication {
+            default = writeShellApplication {
               name = "deploy-script";
 
               runtimeInputs = with pkgs; [
@@ -67,7 +67,7 @@
               '';
             };
 
-            teardown = pkgs.writeShellApplication {
+            teardown = writeShellApplication {
               name = "teardown-script";
 
               runtimeInputs = with pkgs; [
@@ -98,7 +98,7 @@
             ];
 
             shellHook = ''
-              source ${lib.getExe config.agenix-shell.installationScript}
+              source ${getExe config.agenix-shell.installationScript}
 
               ${config.pre-commit.shellHook}
             '';
