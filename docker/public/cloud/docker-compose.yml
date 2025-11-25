@@ -23,7 +23,6 @@ services:
       - nextcloud-migrations
     volumes:
       - nextcloud-primary:/var/www/html
-      - nextcloud-data:/var/www/html/data
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=nextcloud
@@ -35,6 +34,8 @@ services:
       - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${DOMAIN_NAME}
       - PHP_MEMORY_LIMIT=2048M
       - PHP_UPLOAD_LIMIT=16384M
+      - TRUSTED_PROXIES=172.18.0.0/24
+      - OVERWRITEPROTOCOL=https
     networks:
       - default
       - backend_default

@@ -42,7 +42,8 @@ services:
       # Mount the ACME file for persistent certificates
       - traefik-certs:/acme
     networks:
-      - default
+      default:
+        ipv4_address: 172.18.0.5
     ports:
       - 80:80 # The HTTP port
       - 443:443 # The HTTPS port
