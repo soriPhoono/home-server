@@ -4,12 +4,6 @@ services:
     container_name: socket-proxy
     restart: unless-stopped
     privileged: true
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/containers/json"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -30,12 +24,6 @@ services:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -52,12 +40,6 @@ services:
     container_name: prometheus
     restart: unless-stopped
     command: --config.file=/etc/prometheus/prometheus.yml
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
@@ -66,17 +48,23 @@ services:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
+  # promtail:
+  #   image: grafana/promtail:latest
+  #   container_name: promtail
+  #   restart: unless-stopped
+  #   command: -config.file=/etc/promtail/config.yml
+  #   volumes:
+  #     - ./promtail.yml:/etc/promtail/config.yml:ro
+  #     - /var/log:/var/log:ro
+
+  #     - promtail-data:/var/lib/promtail
+  #   networks:
+  #     - default
   loki:
     image: grafana/loki:latest
     container_name: loki
     restart: unless-stopped
     command: -config.file=/etc/loki/loki.yml
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3100/ready"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     volumes:
       - ./loki.yml:/etc/loki/loki.yml:ro
     networks:
@@ -87,12 +75,6 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     environment: # Required if Grafana is running behind a reverse proxy
       GF_SERVER_ROOT_URL: https://monitoring.admin.${DOMAIN_NAME}
     volumes:

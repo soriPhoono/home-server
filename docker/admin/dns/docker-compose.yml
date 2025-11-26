@@ -5,12 +5,6 @@ services:
     restart: unless-stopped
     cap_add:
       - SYS_NICE
-    healthcheck:
-      test: ["CMD-SHELL", "pihole status || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     environment:
       # Set the appropriate timezone for your location from
       # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, e.g:

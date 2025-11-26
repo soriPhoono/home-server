@@ -4,12 +4,6 @@ services:
     container_name: authentik-migrations
     restart: no
     command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authentik -d authentik -h postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
     volumes:
       - ./init:/init:ro
     environment:
@@ -26,12 +20,6 @@ services:
     container_name: authentik-worker
     restart: unless-stopped
     command: worker
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     depends_on:
       - migrations
     environment:
@@ -56,12 +44,6 @@ services:
     container_name: authentik-server
     restart: unless-stopped
     command: server
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     depends_on:
       - migrations
       - worker
