@@ -4,6 +4,12 @@ services:
     restart: unless-stopped
     container_name: portainer
     command: -H tcp://portainer-agent:9001 --tlsskipverify
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/status"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       - agent
     volumes:
@@ -26,6 +32,12 @@ services:
     image: portainer/agent:lts
     container_name: portainer-agent
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/api/status"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -39,6 +51,12 @@ services:
     container_name: watchtower
     restart: unless-stopped
     command: --cleanup --interval 300 # TODO: check this
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     logging:

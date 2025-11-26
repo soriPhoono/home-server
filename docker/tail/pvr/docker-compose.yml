@@ -3,6 +3,12 @@ services:
     image: linuxserver/qbittorrent
     container_name: qbittorrent
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - TZ=America/Chicago
     volumes:
@@ -30,6 +36,12 @@ services:
     restart: unless-stopped
     depends_on:
       - qbittorrent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9696"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - TZ=America/Chicago
     volumes:
@@ -54,6 +66,12 @@ services:
     depends_on:
       - qbittorrent
       - prowlarr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8989"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - sonarr-config:/config
       - /mnt/data/media/Shows:/shows
@@ -80,6 +98,12 @@ services:
     depends_on:
       - qbittorrent
       - prowlarr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7878"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - radarr-config:/config
       - /mnt/data/media/Movies:/movies
@@ -103,6 +127,12 @@ services:
     image: linuxserver/jellyfin
     container_name: jellyfin
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     devices:
       - /dev/dri:/dev/dri
     volumes:
@@ -132,6 +162,12 @@ services:
       - sonarr
       - radarr
       - jellyfin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - jellyseerr-config:/app/config
     environment:
