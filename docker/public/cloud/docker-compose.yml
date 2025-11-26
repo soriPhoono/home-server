@@ -40,6 +40,18 @@ services:
       # SKIP_DOMAIN_VALIDATION: false # This should only be set to true if things are correctly configured. See https://github.com/nextcloud/all-in-one#how-to-skip-the-domain-validation
       # TALK_PORT: 3478 # This allows to adjust the port that the talk container is using which is exposed on the host. See https://github.com/nextcloud/all-in-one#how-to-adjust-the-talk-port
       # WATCHTOWER_DOCKER_SOCKET_PATH: /var/run/docker.sock # Needs to be specified if the docker socket on the host is not located in the default '/var/run/docker.sock'. Otherwise mastercontainer updates will fail. For macos it needs to be '/var/run/docker.sock'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cloud.rule=Host(`cloud.${DOMAIN_NAME}`)
+      - traefik.http.routers.cloud.entrypoints=websecure
+      - traefik.http.routers.cloud.tls=true
+      - traefik.http.routers.cloud.tls.certresolver=le
+      - traefik.http.services.cloud.loadbalancer.server.url=http://nextcloud-aio-apache:11000
+      - traefik.http.middlewares.nc-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.nc-secure-headers.headers.hostsProxyHeaders=X-Forwarded-Host
+      - traefik.http.middlewares.nc-secure-headers.headers.referrerPolicy=same-origin
+      - traefik.http.middlewares.nc-chain.chain.middlewares=nc-redirect,nc-secure-headers
+      - traefik.http.routers.cloud.middlewares=nc-chain
 volumes: # If you want to store the data on a different drive, see https://github.com/nextcloud/all-in-one#how-to-store-the-filesinstallation-on-a-separate-drive
   nextcloud_aio_mastercontainer:
     name: nextcloud_aio_mastercontainer # This line is not allowed to be changed as otherwise the built-in backup solution will not work
