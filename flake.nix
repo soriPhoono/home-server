@@ -77,9 +77,11 @@
 
                 docker compose -f ./docker/tail/downloads/docker-compose.yml up -d
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d
-                # docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d
+                docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d
 
                 docker compose -f ./docker/public/auth/docker-compose.yml up -d
+
+                docker compose -f ./docker/public/cloud/docker-compose.yml up -d
               '';
             };
 
@@ -93,9 +95,11 @@
               text = ''
                 set -euo pipefail
 
+                docker compose -f ./docker/public/cloud/docker-compose.yml down
+
                 docker compose -f ./docker/public/auth/docker-compose.yml down
 
-                # docker compose -f ./docker/tail/jukebox/docker-compose.yml down
+                docker compose -f ./docker/tail/jukebox/docker-compose.yml down
                 docker compose -f ./docker/tail/pvr/docker-compose.yml down
                 docker compose -f ./docker/tail/downloads/docker-compose.yml down
 
