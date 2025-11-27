@@ -8,6 +8,10 @@ in {
 
   "secrets/postgres_password.age".publicKeys = keys;
 
+  "secrets/funkwhale_db_password.age".publicKeys = keys;
+  "secrets/funkwhale-django_secret_key.age".publicKeys = keys;
+  "secrets/typesense-api_key.age".publicKeys = keys;
+
   "secrets/authentik_db_password.age".publicKeys = keys;
   "secrets/authentik_secret_key.age".publicKeys = keys;
 }

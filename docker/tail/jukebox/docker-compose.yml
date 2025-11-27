@@ -1,0 +1,92 @@
+x-common:
+  funkwhale-config: &funkwhale-config
+    FUNKWHALE_URL: "https://jukebox.tail.${DOMAIN_NAME}"
+    DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+  typesense-config: &typesense-config
+    TYPESENSE_API_KEY: "${TYPESENSE_API_KEY}"
+services:
+  migrations:
+    image: postgres:18-alpine
+    container_name: funkwhale-migrations
+    restart: no
+    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    volumes:
+      - ./init:/init:ro
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      FUNKWHALE_DB_PASSWORD: "${FUNKWHALE_DB_PASSWORD}"
+    networks:
+      - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
+  celeryworker:
+    image: funkwhale/api:latest
+    restart: no # unless-stopped
+    command:
+      - celery
+      - --app=funkwhale_api.taskapp
+      - worker
+      - --loglevel=INFO
+      - --concurrency=0
+    user: "995"
+    environment:
+      !!merge <<: [*funkwhale-config, *typesense-config]
+      C_FORCE_ROOT: true
+    volumes:
+      - funkwhale-media:/srv/funkwhale/data/media
+    networks:
+      - backend_default
+  celerybeat:
+    image: funkwhale/api:latest
+    restart: no # unless-stopped
+    command:
+      - celery
+      - --app=funkwhale_api.taskapp
+      - beat
+      - --loglevel=INFO
+    environment:
+      !!merge <<: [*funkwhale-config, *typesense-config]
+  api:
+    image: funkwhale/api:latest
+    restart: no # unless-stopped
+    volumes:
+      - funkwhale-media:/srv/funkwhale/data/media
+      - funkwhale-static:/srv/funkwhale/data/static
+    environment:
+      !!merge <<: *funkwhale-config
+      DATABASE_URL: "postgresql://funkwhale:${FUNKWHALE_DB_PASSWORD}@postgres:5432/funkwhale"
+      DATABASE_USER:
+      DATABASE_PASSWORD:
+      DATABASE_HOST:
+      DATABASE_PORT:
+    networks:
+      - backend_default
+  # front:
+  #   image: funkwhale/front:latest
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - api
+  #   environment:
+  #     - NGINX_MAX_BODY_SIZE=100M
+  #   volumes:
+  #     - funkwhale-media:/srv/funkwhale/data/music:ro
+  #     - funkwhale-static:/usr/share/nginx/html/staticfiles:ro
+  typesense:
+    image: typesense/typesense:30.0.rca33
+    restart: no # unless-stopped
+    command: --data-dir /data --enable-cors
+    volumes:
+      - typesense-data:/data
+    environment:
+      !!merge <<: *typesense-config
+volumes:
+  funkwhale-media:
+  funkwhale-static:
+  typesense-data:
+networks:
+  backend_default:
+    external: true
+  proxy_default:
+    external: true

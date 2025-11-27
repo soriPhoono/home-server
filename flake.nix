@@ -30,6 +30,10 @@
 
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
 
+          DJANGO_SECRET_KEY.file = ./secrets/funkwhale-django_secret_key.age;
+          TYPESENSE_API_KEY.file = ./secrets/typesense-api_key.age;
+          FUNKWHALE_DB_PASSWORD.file = ./secrets/funkwhale_db_password.age;
+
           AUTHENTIK_DB_PASSWORD.file = ./secrets/authentik_db_password.age;
           AUTHENTIK_SECRET_KEY.file = ./secrets/authentik_secret_key.age;
         };
@@ -70,7 +74,9 @@
 
                 docker compose -f ./docker/admin/backend/docker-compose.yml up -d
 
+                docker compose -f ./docker/tail/downloads/docker-compose.yml up -d
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d
+                # docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d
 
                 docker compose -f ./docker/public/auth/docker-compose.yml up -d
               '';
@@ -88,7 +94,9 @@
 
                 docker compose -f ./docker/public/auth/docker-compose.yml down
 
+                # docker compose -f ./docker/tail/jukebox/docker-compose.yml down
                 docker compose -f ./docker/tail/pvr/docker-compose.yml down
+                docker compose -f ./docker/tail/downloads/docker-compose.yml down
 
                 docker compose -f ./docker/admin/backend/docker-compose.yml down
 
