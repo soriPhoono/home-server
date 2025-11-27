@@ -51,18 +51,6 @@ services:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
-    labels:
-      - traefik.enable=true
-      # Dashboard router
-      - traefik.http.routers.dashboard.rule=Host(`proxy.admin.${DOMAIN_NAME}`)
-      - traefik.http.routers.dashboard.entrypoints=websecure
-      - traefik.http.routers.dashboard.service=api@internal
-      - traefik.http.routers.dashboard.tls=true
-      - traefik.http.routers.dashboard.middlewares=dashboard-auth@docker
-      # Basic‑auth middleware
-      - traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$hpN8qr0J$$frjpxwhIw.OG0R2yn5dqW.
-      # Service hint
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
 networks:
   default:
     ipam:

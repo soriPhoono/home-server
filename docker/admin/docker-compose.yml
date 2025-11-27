@@ -5,7 +5,8 @@ services:
     container_name: portainer
     command: -H tcp://portainer-agent:9001 --tlsskipverify
     depends_on:
-      - agent
+      agent:
+        condition: service_started
     volumes:
       - portainer-data:/data
     networks:
@@ -26,6 +27,8 @@ services:
     image: portainer/agent:lts
     container_name: portainer-agent
     restart: always
+    depends_on:
+      - watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:

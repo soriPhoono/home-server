@@ -1,8 +1,14 @@
+# TODO: add healthcheck
 services:
   pihole:
     image: pihole/pihole:latest
     container_name: pihole
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pihole", "-c"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
     cap_add:
       - SYS_NICE
     environment:
