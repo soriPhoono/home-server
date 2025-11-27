@@ -1,11 +1,24 @@
 x-common:
   funkwhale-config: &funkwhale-config
-    FUNKWHALE_URL: "https://jukebox.tail.${DOMAIN_NAME}"
-    DATABASE_URL: "postgresql://funkwhale:${FUNKWHALE_DB_PASSWORD}@postgres:5432/funkwhale"
+    FUNKWHALE_HOSTNAME: "jukebox.tail.${DOMAIN_NAME}"
+    FUNKWHALE_PROTOCOL: "https"
+    DATABASE_URL: "postgres://funkwhale:${FUNKWHALE_DB_PASSWORD}@postgres:5432/funkwhale"
+    CACHE_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
     DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+    DISABLE_PASSWORD_VALIDATORS: false
+    MEDIA_ROOT: "/srv/funkwhale/data/media"
+    MUSIC_DIRECTORY_PATH: "/srv/funkwhale/data/music"
   typesense-config: &typesense-config
     TYPESENSE_API_KEY: "${TYPESENSE_API_KEY}"
 services:
+  typesense:
+    image: typesense/typesense:30.0.rca33
+    restart: no # unless-stopped
+    command: --data-dir /data --enable-cors
+    volumes:
+      - typesense-data:/data
+    environment:
+      !!merge <<: *typesense-config
   migrations:
     image: postgres:18-alpine
     container_name: funkwhale-migrations
@@ -25,6 +38,8 @@ services:
   celeryworker:
     image: funkwhale/api:latest
     restart: no # unless-stopped
+    depends_on:
+      - migrations
     command:
       - celery
       - --app=funkwhale_api.taskapp
@@ -32,16 +47,19 @@ services:
       - --loglevel=INFO
       - --concurrency=0
     user: "995"
+    volumes:
+      - /mnt/data/media/Music:/srv/funkwhale/data/music
+      - funkwhale-media:/srv/funkwhale/data/media
     environment:
       !!merge <<: [*funkwhale-config, *typesense-config]
       C_FORCE_ROOT: true
-    volumes:
-      - funkwhale-media:/srv/funkwhale/data/media
     networks:
       - backend_default
   celerybeat:
     image: funkwhale/api:latest
     restart: no # unless-stopped
+    depends_on:
+      - celeryworker
     command:
       - celery
       - --app=funkwhale_api.taskapp
@@ -49,39 +67,49 @@ services:
       - --loglevel=INFO
     environment:
       !!merge <<: [*funkwhale-config, *typesense-config]
+    networks:
+      - default
   api:
     image: funkwhale/api:latest
     restart: no # unless-stopped
+    depends_on:
+      - celerybeat
+      - celeryworker
     volumes:
       - funkwhale-media:/srv/funkwhale/data/media
       - funkwhale-static:/srv/funkwhale/data/static
     environment:
-      !!merge <<: *funkwhale-config
+      !!merge <<: [*funkwhale-config, *typesense-config]
     networks:
       - backend_default
-  # front:
-  #   image: funkwhale/front:latest
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - api
-  #   environment:
-  #     - NGINX_MAX_BODY_SIZE=100M
-  #   volumes:
-  #     - funkwhale-media:/srv/funkwhale/data/music:ro
-  #     - funkwhale-static:/usr/share/nginx/html/staticfiles:ro
-  typesense:
-    image: typesense/typesense:30.0.rca33
+      - default
+  front:
+    image: funkwhale/front:latest
     restart: no # unless-stopped
-    command: --data-dir /data --enable-cors
+    depends_on:
+      - api
     volumes:
-      - typesense-data:/data
+      - funkwhale-media:/srv/funkwhale/data/media:ro
+      - funkwhale-static:/usr/share/nginx/html/staticfiles:ro
     environment:
-      !!merge <<: *typesense-config
+      !!merge <<: *funkwhale-config
+      NGINX_MAX_BODY_SIZE: 100M
+    networks:
+      - default
+      - proxy_default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.funkwhale.rule=Host(`jukebox.tail.${DOMAIN_NAME}`)
+      - traefik.http.routers.funkwhale.entrypoints=websecure
+      - traefik.http.routers.funkwhale.tls=true
+      - traefik.http.routers.funkwhale.tls.certresolver=le
+      - traefik.http.services.funkwhale.loadbalancer.server.port=80
 volumes:
   funkwhale-media:
   funkwhale-static:
   typesense-data:
 networks:
+  default:
   backend_default:
     external: true
   proxy_default:
