@@ -65,5 +65,8 @@ services:
       - traefik.http.services.traefik.loadbalancer.server.port=8080
 networks:
   default:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
 volumes:
   traefik-certs:

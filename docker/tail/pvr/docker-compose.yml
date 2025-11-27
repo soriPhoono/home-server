@@ -1,59 +1,8 @@
 services:
-  qbittorrent:
-    image: linuxserver/qbittorrent
-    container_name: qbittorrent
-    restart: unless-stopped
-    environment:
-      - TZ=America/Chicago
-    volumes:
-      - qbittorrent-config:/config
-      - /mnt/data/media/Torrent:/downloads
-    networks:
-      - proxy_default
-    ports:
-      - 6881:6881/tcp
-      - 6881:6881/udp
-    logging:
-      driver: loki
-      options:
-        loki-url: http://localhost:3100/loki/api/v1/push
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.qbittorrent.rule=Host(`downloads.tail.${DOMAIN_NAME}`)
-      - traefik.http.routers.qbittorrent.entrypoints=websecure
-      - traefik.http.routers.qbittorrent.tls=true
-      - traefik.http.routers.qbittorrent.tls.certresolver=le
-      - traefik.http.services.qbittorrent.loadbalancer.server.port=8080
-  prowlarr:
-    image: linuxserver/prowlarr
-    container_name: prowlarr
-    restart: unless-stopped
-    depends_on:
-      - qbittorrent
-    environment:
-      - TZ=America/Chicago
-    volumes:
-      - prowlarr-config:/config
-    networks:
-      - proxy_default
-    logging:
-      driver: loki
-      options:
-        loki-url: http://localhost:3100/loki/api/v1/push
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.prowlarr.rule=Host(`downloads.tail.${DOMAIN_NAME}`) && PathPrefix(`/indexers`)
-      - traefik.http.routers.prowlarr.entrypoints=websecure
-      - traefik.http.routers.prowlarr.tls=true
-      - traefik.http.routers.prowlarr.tls.certresolver=le
-      - traefik.http.services.prowlarr.loadbalancer.server.port=9696
   sonarr:
     image: linuxserver/sonarr
     container_name: sonarr
     restart: unless-stopped
-    depends_on:
-      - qbittorrent
-      - prowlarr
     volumes:
       - sonarr-config:/config
       - /mnt/data/media/Shows:/shows
@@ -77,9 +26,6 @@ services:
     image: linuxserver/radarr
     container_name: radarr
     restart: unless-stopped
-    depends_on:
-      - qbittorrent
-      - prowlarr
     volumes:
       - radarr-config:/config
       - /mnt/data/media/Movies:/movies
@@ -150,8 +96,6 @@ services:
       - traefik.http.routers.jellyseerr.tls.certresolver=le
       - traefik.http.services.jellyseerr.loadbalancer.server.port=5055
 volumes:
-  prowlarr-config:
-  qbittorrent-config:
   sonarr-config:
   radarr-config:
   jellyfin-config:
