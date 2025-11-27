@@ -1,6 +1,9 @@
 x-common:
   funkwhale-config: &funkwhale-config
     FUNKWHALE_URL: "https://jukebox.tail.${DOMAIN_NAME}"
+    DATABASE_URL: "postgresql://postgres:5432/funkwhale"
+    DATABASE_USER: "funkwhale"
+    DATABASE_PASSWORD: "${FUNKWHALE_DB_PASSWORD}"
     DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
   typesense-config: &typesense-config
     TYPESENSE_API_KEY: "${TYPESENSE_API_KEY}"
@@ -56,11 +59,6 @@ services:
       - funkwhale-static:/srv/funkwhale/data/static
     environment:
       !!merge <<: *funkwhale-config
-      DATABASE_URL: "postgresql://funkwhale:${FUNKWHALE_DB_PASSWORD}@postgres:5432/funkwhale"
-      DATABASE_USER:
-      DATABASE_PASSWORD:
-      DATABASE_HOST:
-      DATABASE_PORT:
     networks:
       - backend_default
   # front:
