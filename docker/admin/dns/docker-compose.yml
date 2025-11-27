@@ -24,7 +24,7 @@ services:
     volumes:
       - config:/etc/pihole
     networks:
-      - proxy_default
+      - core_traefik-public
     ports:
       # DNS Ports
       - 53:53/tcp
@@ -54,7 +54,7 @@ services:
       - "traefik.http.middlewares.pihole-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.pihole.middlewares=pihole-headers"
 networks:
-  proxy_default:
+  core_traefik-public:
     external: true
 volumes:
   config:
