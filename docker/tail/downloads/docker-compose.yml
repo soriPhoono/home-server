@@ -1,18 +1,43 @@
 services:
+  tailscale:
+    image: tailscale/tailscale:stable
+    container_name: tailscale
+    restart: unless-stopped
+    hostname: qbittorrent-tailscale
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:9002/healthz || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    devices:
+      - /dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    environment:
+      - TS_ACCEPT_DNS=true
+      - TS_USERSPACE=false
+      - TS_ENABLE_HEALTH_CHECK=true
+      - TS_ENABLE_METRICS=true
+      - TS_AUTHKEY=${TAILSCALE_AUTH_KEY}
+    volumes:
+      - tailscale-config:/var/lib/tailscale
+    networks:
+      - core_traefik-public
   qbittorrent:
     image: linuxserver/qbittorrent
     container_name: qbittorrent
     restart: unless-stopped
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     environment:
       - TZ=America/Chicago
     volumes:
       - qbittorrent-config:/config
       - /mnt/data/media/Torrent:/downloads
-    networks:
-      - core_traefik-public
-    ports:
-      - 6881:6881/tcp
-      - 6881:6881/udp
     logging:
       driver: loki
       options:
@@ -48,6 +73,7 @@ services:
       - traefik.http.routers.prowlarr.tls.certresolver=cf-ts
       - traefik.http.services.prowlarr.loadbalancer.server.port=9696
 volumes:
+  tailscale-config:
   qbittorrent-config:
   prowlarr-config:
 networks:
