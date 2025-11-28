@@ -28,6 +28,8 @@
           REDIS_PASSWORD.file = ./secrets/redis_password.age;
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
 
+          TAILSCALE_AUTH_KEY.file = ./secrets/tailscale_auth_key.age;
+
           DJANGO_SECRET_KEY.file = ./secrets/funkwhale-django_secret_key.age;
           TYPESENSE_API_KEY.file = ./secrets/typesense-api_key.age;
           FUNKWHALE_DB_PASSWORD.file = ./secrets/funkwhale_db_password.age;

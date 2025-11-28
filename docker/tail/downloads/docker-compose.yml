@@ -48,8 +48,8 @@ services:
       - traefik.http.routers.prowlarr.tls.certresolver=cf-ts
       - traefik.http.services.prowlarr.loadbalancer.server.port=9696
 volumes:
-  prowlarr-config:
   qbittorrent-config:
+  prowlarr-config:
 networks:
   core_traefik-public:
     external: true
