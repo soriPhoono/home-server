@@ -25,7 +25,6 @@
       systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
-          CF_API_TOKEN.file = ./secrets/cf_api_token.age;
           DNS_ADMIN_PASSWORD.file = ./secrets/dns_admin_password.age;
 
           REDIS_PASSWORD.file = ./secrets/redis_password.age;
