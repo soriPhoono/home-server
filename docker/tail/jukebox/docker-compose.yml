@@ -102,7 +102,7 @@ services:
       - traefik.http.routers.funkwhale.rule=Host(`jukebox.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.funkwhale.entrypoints=websecure
       - traefik.http.routers.funkwhale.tls=true
-      - traefik.http.routers.funkwhale.tls.certresolver=le
+      - traefik.http.routers.funkwhale.tls.certresolver=cf-ts
       - traefik.http.services.funkwhale.loadbalancer.server.port=80
 volumes:
   funkwhale-media:

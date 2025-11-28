@@ -91,7 +91,7 @@ services:
       - traefik.http.routers.grafana.rule=Host(`monitoring.admin.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.grafana.entrypoints=websecure
       - traefik.http.routers.grafana.tls=true
-      - traefik.http.routers.grafana.tls.certresolver=le
+      - traefik.http.routers.grafana.tls.certresolver=cf-ts
       - traefik.http.services.grafana.loadbalancer.server.port=3000
 volumes:
   prometheus-data:
