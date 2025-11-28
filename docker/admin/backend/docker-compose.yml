@@ -52,18 +52,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
     networks:
       - default
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.adminer.rule=Host(`db.admin.${DOMAIN_NAME}`)
+      - traefik.http.routers.adminer.rule=Host(`db.admin.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls=true
       - traefik.http.routers.adminer.tls.certresolver=le
@@ -73,5 +71,5 @@ volumes:
   redis-data:
 networks:
   default:
-  proxy_default:
+  core_traefik-public:
     external: true

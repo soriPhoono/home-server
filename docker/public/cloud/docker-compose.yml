@@ -10,7 +10,7 @@ services:
     # network_mode: bridge # This adds the container to the same network as docker run would do. Comment this line and uncomment the line below and the networks section at the end of the file if you want to define a custom MTU size for the docker network
     networks:
       - nextcloud-aio
-      - proxy_default
+      - core_traefik-public
     ports:
       # - 80:80 # Can be removed when running behind a web server or reverse proxy (like Apache, Nginx, Caddy, Cloudflare Tunnel and else). See https://github.com/nextcloud/all-in-one/blob/main/reverse-proxy.md
       - 8080:8080 # This is the AIO interface, served via https and self-signed certificate. See https://github.com/nextcloud/all-in-one#explanation-of-used-ports
@@ -46,18 +46,18 @@ services:
       - traefik.http.routers.cloud.entrypoints=websecure
       - traefik.http.routers.cloud.tls=true
       - traefik.http.routers.cloud.tls.certresolver=le
-      - traefik.http.services.cloud.loadbalancer.server.url=http://nextcloud-aio-apache:11000
       - traefik.http.middlewares.nc-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.nc-secure-headers.headers.hostsProxyHeaders=X-Forwarded-Host
       - traefik.http.middlewares.nc-secure-headers.headers.referrerPolicy=same-origin
       - traefik.http.middlewares.nc-chain.chain.middlewares=nc-redirect,nc-secure-headers
       - traefik.http.routers.cloud.middlewares=nc-chain
+      - traefik.http.services.cloud.loadbalancer.server.url=http://nextcloud-aio-apache:11000
 volumes: # If you want to store the data on a different drive, see https://github.com/nextcloud/all-in-one#how-to-store-the-filesinstallation-on-a-separate-drive
   nextcloud_aio_mastercontainer:
     name: nextcloud_aio_mastercontainer # This line is not allowed to be changed as otherwise the built-in backup solution will not work
 # # Adjust the MTU size of the docker network. See https://github.com/nextcloud/all-in-one#how-to-adjust-the-mtu-size-of-the-docker-network
 networks:
-  proxy_default:
+  core_traefik-public:
     external: true
   nextcloud-aio:
     name: nextcloud-aio

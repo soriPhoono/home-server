@@ -36,23 +36,23 @@ services:
     labels:
       - traefik.enable=true
       # router: redirect HTTP -> HTTPS
-      - "traefik.http.routers.pihole-http.rule=Host(`dns.admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.pihole-http.rule=Host(`dns.admin.ts.${DOMAIN_NAME}`)"
       - "traefik.http.routers.pihole-http.entrypoints=web"
-      - "traefik.http.routers.pihole-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.pihole-http.middlewares=redirect-to-https"
       # secure router (HTTPS) for entire host
-      - "traefik.http.routers.pihole.rule=Host(`dns.admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.pihole.rule=Host(`dns.admin.ts.${DOMAIN_NAME}`)"
       - "traefik.http.routers.pihole.entrypoints=websecure"
       - "traefik.http.routers.pihole.tls=true"
       - "traefik.http.routers.pihole.tls.certresolver=le"
       # If you prefer only /admin behind Traefik:
       # - "traefik.http.routers.pihole.rule=Host(`pihole.example.com`) && (PathPrefix(`/admin`) || PathPrefix(`/admin/`))"
 
-      # service port inside the container (lighttpd => 80)
-      - "traefik.http.services.pihole.loadbalancer.server.port=80"
       # headers middleware so Pi-hole sees X-Forwarded-Proto=https and generates https links
       - "traefik.http.middlewares.pihole-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.pihole.middlewares=pihole-headers"
+      # service port inside the container (lighttpd => 80)
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
 networks:
   core_traefik-public:
     external: true

@@ -10,14 +10,14 @@ services:
     environment:
       - TZ=America/Chicago
     networks:
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.sonarr.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/shows`)
+      - traefik.http.routers.sonarr.rule=Host(`pvr.ts.${DOMAIN_NAME}`) && PathPrefix(`/shows`)
       - traefik.http.routers.sonarr.entrypoints=websecure
       - traefik.http.routers.sonarr.tls=true
       - traefik.http.routers.sonarr.tls.certresolver=le
@@ -33,14 +33,14 @@ services:
     environment:
       - TZ=America/Chicago
     networks:
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.radarr.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/movies`)
+      - traefik.http.routers.radarr.rule=Host(`pvr.ts.${DOMAIN_NAME}`) && PathPrefix(`/movies`)
       - traefik.http.routers.radarr.entrypoints=websecure
       - traefik.http.routers.radarr.tls=true
       - traefik.http.routers.radarr.tls.certresolver=le
@@ -58,14 +58,14 @@ services:
     environment:
       - TZ=America/Chicago
     networks:
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.jellyfin.rule=Host(`pvr.tail.${DOMAIN_NAME}`) && PathPrefix(`/watch`)
+      - traefik.http.routers.jellyfin.rule=Host(`pvr.ts.${DOMAIN_NAME}`) && PathPrefix(`/watch`)
       - traefik.http.routers.jellyfin.entrypoints=websecure
       - traefik.http.routers.jellyfin.tls=true
       - traefik.http.routers.jellyfin.tls.certresolver=le
@@ -83,14 +83,14 @@ services:
     environment:
       - TZ=America/Chicago
     networks:
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.jellyseerr.rule=Host(`pvr.tail.${DOMAIN_NAME}`)
+      - traefik.http.routers.jellyseerr.rule=Host(`pvr.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.jellyseerr.entrypoints=websecure
       - traefik.http.routers.jellyseerr.tls=true
       - traefik.http.routers.jellyseerr.tls.certresolver=le
@@ -101,5 +101,5 @@ volumes:
   jellyfin-config:
   jellyseerr-config:
 networks:
-  proxy_default:
+  core_traefik-public:
     external: true

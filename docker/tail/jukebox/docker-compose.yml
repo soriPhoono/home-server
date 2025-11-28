@@ -96,10 +96,10 @@ services:
       NGINX_MAX_BODY_SIZE: 100M
     networks:
       - default
-      - proxy_default
+      - core_traefik-public
     labels:
       - traefik.enable=true
-      - traefik.http.routers.funkwhale.rule=Host(`jukebox.tail.${DOMAIN_NAME}`)
+      - traefik.http.routers.funkwhale.rule=Host(`jukebox.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.funkwhale.entrypoints=websecure
       - traefik.http.routers.funkwhale.tls=true
       - traefik.http.routers.funkwhale.tls.certresolver=le
@@ -112,5 +112,5 @@ networks:
   default:
   backend_default:
     external: true
-  proxy_default:
+  core_traefik-public:
     external: true

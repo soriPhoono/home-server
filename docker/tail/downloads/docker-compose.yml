@@ -9,7 +9,7 @@ services:
       - qbittorrent-config:/config
       - /mnt/data/media/Torrent:/downloads
     networks:
-      - proxy_default
+      - core_traefik-public
     ports:
       - 6881:6881/tcp
       - 6881:6881/udp
@@ -19,7 +19,7 @@ services:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.qbittorrent.rule=Host(`downloads.tail.${DOMAIN_NAME}`)
+      - traefik.http.routers.qbittorrent.rule=Host(`downloads.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.qbittorrent.entrypoints=websecure
       - traefik.http.routers.qbittorrent.tls=true
       - traefik.http.routers.qbittorrent.tls.certresolver=le
@@ -35,14 +35,14 @@ services:
     volumes:
       - prowlarr-config:/config
     networks:
-      - proxy_default
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.prowlarr.rule=Host(`downloads.tail.${DOMAIN_NAME}`) && PathPrefix(`/indexers`)
+      - traefik.http.routers.prowlarr.rule=Host(`downloads.ts.${DOMAIN_NAME}`) && PathPrefix(`/indexers`)
       - traefik.http.routers.prowlarr.entrypoints=websecure
       - traefik.http.routers.prowlarr.tls=true
       - traefik.http.routers.prowlarr.tls.certresolver=le
@@ -51,5 +51,5 @@ volumes:
   prowlarr-config:
   qbittorrent-config:
 networks:
-  proxy_default:
+  core_traefik-public:
     external: true
