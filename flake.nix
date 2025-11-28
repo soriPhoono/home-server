@@ -25,8 +25,6 @@
       systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
-          DNS_ADMIN_PASSWORD.file = ./secrets/dns_admin_password.age;
-
           REDIS_PASSWORD.file = ./secrets/redis_password.age;
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
 
@@ -66,11 +64,9 @@
                   docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
                 fi
 
-                docker compose -f ./docker/admin/dns/docker-compose.yml up -d --remove-orphans
+                docker compose -f ./docker/admin/backend/docker-compose.yml up -d --remove-orphans
 
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --remove-orphans
-
-                docker compose -f ./docker/admin/backend/docker-compose.yml up -d --remove-orphans
 
                 docker compose -f ./docker/tail/downloads/docker-compose.yml up -d --remove-orphans
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --remove-orphans
@@ -100,11 +96,9 @@
                 docker compose -f ./docker/tail/pvr/docker-compose.yml down
                 docker compose -f ./docker/tail/downloads/docker-compose.yml down
 
-                docker compose -f ./docker/admin/backend/docker-compose.yml down
-
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml down
 
-                docker compose -f ./docker/admin/dns/docker-compose.yml down
+                docker compose -f ./docker/admin/backend/docker-compose.yml down
               '';
             };
           };

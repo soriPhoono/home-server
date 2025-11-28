@@ -64,7 +64,7 @@ services:
       - traefik.http.routers.adminer.rule=Host(`db.admin.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls=true
-      - traefik.http.routers.adminer.tls.certresolver=le
+      - traefik.http.routers.adminer.tls.certresolver=cf-ts
       - traefik.http.services.adminer.loadbalancer.server.port=8080
 volumes:
   postgres-data:
