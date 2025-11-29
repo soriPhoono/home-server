@@ -70,6 +70,7 @@
 
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --remove-orphans
 
+                docker compose -f ./docker/tail/docker-compose.yml up -d --remove-orphans
                 docker compose -f ./docker/tail/downloads/docker-compose.yml up -d --remove-orphans
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --remove-orphans
                 docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --remove-orphans
