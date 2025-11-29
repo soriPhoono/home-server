@@ -3,10 +3,9 @@ let
 
   keys = [soriphoono];
 in {
-  "secrets/dns_admin_password.age".publicKeys = keys;
-
-  "secrets/redis_password.age".publicKeys = keys;
   "secrets/postgres_password.age".publicKeys = keys;
+  "secrets/mariadb_password.age".publicKeys = keys;
+  "secrets/redis_password.age".publicKeys = keys;
 
   "secrets/tailscale_auth_key.age".publicKeys = keys;
 

@@ -25,9 +25,9 @@ services:
       - tailscale-config:/var/lib/tailscale
     networks:
       - core_traefik-public
-  qbittorrent:
+  qbittorrent-tailscale:
     image: linuxserver/qbittorrent
-    container_name: qbittorrent
+    container_name: qbittorrent-tailscale
     restart: unless-stopped
     network_mode: "service:tailscale"
     depends_on:
