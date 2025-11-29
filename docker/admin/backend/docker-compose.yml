@@ -88,6 +88,7 @@ services:
       - traefik.http.services.adminer.loadbalancer.server.port=8080
 volumes:
   postgres-data:
+  mariadb-data:
   redis-data:
 networks:
   default:
