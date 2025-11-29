@@ -19,6 +19,26 @@ services:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
+  mariadb:
+    image: mariadb:12
+    container_name: mariadb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_PASSWORD}
+    networks:
+      - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   redis:
     image: library/redis:latest
     container_name: redis

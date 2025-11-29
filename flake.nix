@@ -25,8 +25,9 @@
       systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
-          REDIS_PASSWORD.file = ./secrets/redis_password.age;
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
+          MARIADB_PASSWORD.file = ./secrets/mariadb_password.age;
+          REDIS_PASSWORD.file = ./secrets/redis_password.age;
 
           TAILSCALE_AUTH_KEY.file = ./secrets/tailscale_auth_key.age;
 
