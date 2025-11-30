@@ -53,11 +53,11 @@ services:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.pterodactyl-panel.rule=Host(`pterodactyl.ts.${DOMAIN_NAME}`)
+      - traefik.http.routers.pterodactyl-panel.rule=Host(`games-server.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.pterodactyl-panel.entrypoints=web
       - traefik.http.middlewares.panel_https.redirectscheme.scheme=https
       - traefik.http.routers.pterodactyl_panel.middlewares=panel_https
-      - traefik.http.routers.pterodactyl-panel-secure.rule=Host(`pterodactyl.ts.${DOMAIN_NAME}`)
+      - traefik.http.routers.pterodactyl-panel-secure.rule=Host(`games-server.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.pterodactyl-panel-secure.entrypoints=websecure
       - traefik.http.routers.pterodactyl-panel-secure.tls=true
       - traefik.http.routers.pterodactyl-panel-secure.tls.certresolver=cf-ts
@@ -65,5 +65,6 @@ services:
 networks:
   backend_default:
     external: true
+  pterodactyl_wings:
   core_traefik-public:
     external: true
