@@ -19,6 +19,7 @@ services:
       - net_admin
       - sys_module
     environment:
+      - TS_AUTH_ONCE=true
       - TS_ACCEPT_DNS=true
       - TS_USERSPACE=false
       - TS_ENABLE_HEALTH_CHECK=true
