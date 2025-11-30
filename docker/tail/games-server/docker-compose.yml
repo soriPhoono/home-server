@@ -31,7 +31,7 @@ services:
     volumes:
       - /mnt/data/pterodactyl:/app/var
     environment:
-      APP_URL: https://pterodactyl.ts.${DOMAIN_NAME}
+      APP_URL: https://games-server.ts.${DOMAIN_NAME}
       APP_ENV: production
       APP_ENVIRONMENT_ONLY: false
       # A list of valid timezones can be found here: http://php.net/manual/en/timezones.php
