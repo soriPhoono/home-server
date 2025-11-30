@@ -8,14 +8,12 @@ services:
       - homepage-config:/app/config # Make sure your local config directory exists
     environment:
       HOMEPAGE_ALLOWED_HOSTS: ts.${DOMAIN_NAME} # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+    networks:
+      - core_traefik-public
     logging:
       driver: loki
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
-    networks:
-      - core_traefik-public
-    ports:
-      - 3000:3000
     labels:
       - traefik.enable=true
       - traefik.http.routers.homepage.rule=Host(`ts.${DOMAIN_NAME}`)

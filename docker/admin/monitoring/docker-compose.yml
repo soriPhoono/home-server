@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
       start_period: 30s
     volumes:
@@ -27,8 +27,8 @@ services:
     command: --config.file=/etc/prometheus/prometheus.yml
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:9090/-/healthy || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
       start_period: 30s
     depends_on:
@@ -49,7 +49,7 @@ services:
     command: -config.file=/etc/loki/loki.yml
     healthcheck:
       test: ["CMD", "/usr/bin/loki", "-target=self", "-config.file=/etc/loki/loki.yml", "-verify-config"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
       retries: 3
       start_period: 30s
@@ -59,14 +59,18 @@ services:
       - default
     ports:
       - 3100:3100
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 5
       start_period: 30s
     depends_on:
@@ -79,7 +83,6 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
-      - backend_default
       - default
       - core_traefik-public
     logging:

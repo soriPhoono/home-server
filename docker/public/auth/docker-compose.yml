@@ -1,9 +1,16 @@
+x-common:
+  authentik-config: &authentik-config
+    AUTHENTIK_POSTGRESQL__HOST: postgres
+    AUTHENTIK_POSTGRESQL__NAME: authentik
+    AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+    AUTHENTIK_POSTGRESQL__USER: authentik
+    AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
 services:
   migrations:
     image: postgres:18-alpine
     container_name: authentik-migrations
     restart: no
-    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    command: ["sh", "-c", "/init/init-db.sh"] # TODO: remove sleep
     volumes:
       - ./init:/init:ro
     environment:
@@ -20,14 +27,17 @@ services:
     container_name: authentik-worker
     restart: unless-stopped
     command: worker
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - migrations
+      migrations:
+        condition: service_completed_successfully
     environment:
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      !!merge <<: *authentik-config
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - authentik-media:/media
@@ -44,15 +54,17 @@ services:
     container_name: authentik-server
     restart: unless-stopped
     command: server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - migrations
-      - worker
+      worker:
+        condition: service_healthy # TODO: add healthcheck to worker and change to service_healthy
     environment:
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      !!merge <<: *authentik-config
     volumes:
       - authentik-media:/media
       - authentik-templates:/templates
@@ -68,7 +80,7 @@ services:
       - traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN_NAME}`)
       - traefik.http.routers.authentik.entrypoints=websecure
       - traefik.http.routers.authentik.tls=true
-      - traefik.http.routers.authentik.tls.certresolver=le
+      - traefik.http.routers.authentik.tls.certresolver=cf-ts
       - traefik.http.services.authentik.loadbalancer.server.port=9000
 volumes:
   authentik-media:

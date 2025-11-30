@@ -24,7 +24,7 @@ services:
     container_name: mariadb
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-p\"${MARIADB_PASSWORD}\""]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -43,12 +43,13 @@ services:
     image: library/redis:latest
     container_name: redis
     restart: unless-stopped
-    command: --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    command: --save 60 1 --loglevel warning
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 3
+      start_period: 30s
     volumes:
       - redis-data:/data
     networks:
@@ -64,14 +65,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mariadb:
+        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     networks:
       - default
       - core_traefik-public
