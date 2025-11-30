@@ -6,7 +6,7 @@ services:
     image: tailscale/tailscale:stable
     container_name: tailscale
     restart: unless-stopped
-    hostname: tailscale
+    hostname: qbittorrent
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:9002/healthz || exit 1"]
       interval: 10s
