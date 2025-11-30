@@ -1,9 +1,10 @@
+# TODO: Build health checks for all services besides migrations
 x-common:
   funkwhale-config: &funkwhale-config
-    FUNKWHALE_HOSTNAME: "jukebox.tail.${DOMAIN_NAME}"
+    FUNKWHALE_HOSTNAME: "jukebox.ts.${DOMAIN_NAME}"
     FUNKWHALE_PROTOCOL: "https"
     DATABASE_URL: "postgres://funkwhale:${FUNKWHALE_DB_PASSWORD}@postgres:5432/funkwhale"
-    CACHE_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+    CACHE_URL: "redis://redis:6379/0"
     DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
     DISABLE_PASSWORD_VALIDATORS: false
     MEDIA_ROOT: "/srv/funkwhale/data/media"
@@ -13,17 +14,22 @@ x-common:
 services:
   typesense:
     image: typesense/typesense:30.0.rca33
-    restart: no # unless-stopped
+    container_name: funkwhale-typesense
+    restart: unless-stopped
     command: --data-dir /data --enable-cors
     volumes:
       - typesense-data:/data
     environment:
       !!merge <<: *typesense-config
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   migrations:
     image: postgres:18-alpine
     container_name: funkwhale-migrations
     restart: no
-    command: ["sh", "-c", "sleep 10; /init/init-db.sh"]
+    command: ["sh", "-c", "/init/init-db.sh"]
     volumes:
       - ./init:/init:ro
     environment:
@@ -37,9 +43,13 @@ services:
         loki-url: http://localhost:3100/loki/api/v1/push
   celeryworker:
     image: funkwhale/api:latest
-    restart: no # unless-stopped
+    container_name: funkwhale-celeryworker
+    restart: unless-stopped
     depends_on:
-      - migrations
+      migrations:
+        condition: service_completed_successfully
+      typesense:
+        condition: service_started
     command:
       - celery
       - --app=funkwhale_api.taskapp
@@ -55,26 +65,32 @@ services:
       C_FORCE_ROOT: true
     networks:
       - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   celerybeat:
     image: funkwhale/api:latest
+    container_name: funkwhale-celerybeat
     restart: no # unless-stopped
     depends_on:
-      - celeryworker
-    command:
-      - celery
-      - --app=funkwhale_api.taskapp
-      - beat
-      - --loglevel=INFO
+      celeryworker:
+        condition: service_started
     environment:
       !!merge <<: [*funkwhale-config, *typesense-config]
     networks:
-      - default
+      - backend_default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   api:
     image: funkwhale/api:latest
+    container_name: funkwhale-api
     restart: no # unless-stopped
     depends_on:
-      - celerybeat
-      - celeryworker
+      celerybeat:
+        condition: service_started
     volumes:
       - funkwhale-media:/srv/funkwhale/data/media
       - funkwhale-static:/srv/funkwhale/data/static
@@ -83,11 +99,16 @@ services:
     networks:
       - backend_default
       - default
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   front:
     image: funkwhale/front:latest
     restart: no # unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_started
     volumes:
       - funkwhale-media:/srv/funkwhale/data/media:ro
       - funkwhale-static:/usr/share/nginx/html/staticfiles:ro
@@ -97,6 +118,10 @@ services:
     networks:
       - default
       - core_traefik-public
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
       - traefik.http.routers.funkwhale.rule=Host(`jukebox.ts.${DOMAIN_NAME}`)
@@ -109,8 +134,8 @@ volumes:
   funkwhale-static:
   typesense-data:
 networks:
-  default:
   backend_default:
     external: true
+  default:
   core_traefik-public:
     external: true

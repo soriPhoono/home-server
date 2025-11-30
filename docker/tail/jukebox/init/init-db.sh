@@ -16,6 +16,19 @@ until PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres -c '\q'; 
 done
 >&2 echo "Postgres is up and running."
 
+# Create user with password
+>&2 echo "Checking if user $DB_OWNER exists..."
+USER_EXISTS=$(PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
+    -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_OWNER'")
+if [ "$USER_EXISTS" = '1' ]; then
+    >&2 echo "User $DB_OWNER already exists. Skipping creation."
+else
+    >&2 echo "Creating database owner user $DB_OWNER..."
+    PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
+        -c "CREATE USER $DB_OWNER WITH PASSWORD '$DB_OWNER_PASS';"
+    >&2 echo "User $DB_OWNER created successfully."
+fi
+
 # Attempt to create the application database if it doesn't exist
 >&2 echo "Checking if database $DB_NAME exists..."
 DB_EXISTS=$(PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
@@ -23,20 +36,7 @@ DB_EXISTS=$(PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
 
 if [ "$DB_EXISTS" = '1' ]; then
     >&2 echo "Database $DB_NAME already exists. Skipping creation."
-else
-    # Create user with password
-    >&2 echo "Checking if user $DB_OWNER exists..."
-    USER_EXISTS=$(PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
-        -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_OWNER'")
-    if [ "$USER_EXISTS" = '1' ]; then
-        >&2 echo "User $DB_OWNER already exists. Skipping creation."
-    else
-        >&2 echo "Creating database owner user $DB_OWNER..."
-        PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \
-            -c "CREATE USER $DB_OWNER WITH PASSWORD '$DB_OWNER_PASS';"
-        >&2 echo "User $DB_OWNER created successfully."
-    fi
-    
+else    
     # Create database
     >&2 echo "Database $DB_NAME does not exist. Creating it now..."
     PGPASSWORD=$DB_PASS psql -h "$DB_HOST" -U "$DB_USER" -d postgres \

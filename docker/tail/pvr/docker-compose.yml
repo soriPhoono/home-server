@@ -1,14 +1,23 @@
+x-common:
+  server-config: &server-config
+    TZ: America/Chicago
 services:
   sonarr:
     image: linuxserver/sonarr
     container_name: sonarr
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8989/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     volumes:
       - sonarr-config:/config
       - /mnt/data/media/Shows:/shows
       - /mnt/data/media/Torrent:/downloads
     environment:
-      - TZ=America/Chicago
+      !!merge <<: *server-config
     networks:
       - core_traefik-public
     logging:
@@ -26,12 +35,18 @@ services:
     image: linuxserver/radarr
     container_name: radarr
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:7878/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     volumes:
       - radarr-config:/config
       - /mnt/data/media/Movies:/movies
       - /mnt/data/media/Torrent:/downloads
     environment:
-      - TZ=America/Chicago
+      !!merge <<: *server-config
     networks:
       - core_traefik-public
     logging:
@@ -49,6 +64,12 @@ services:
     image: linuxserver/jellyfin
     container_name: jellyfin
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8096/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     devices:
       - /dev/dri:/dev/dri
     volumes:
@@ -56,7 +77,7 @@ services:
       - /mnt/data/media/Movies:/movies
       - /mnt/data/media/Shows:/shows
     environment:
-      - TZ=America/Chicago
+      !!merge <<: *server-config
     networks:
       - core_traefik-public
     logging:
@@ -74,10 +95,19 @@ services:
     image: fallenbagel/jellyseerr
     container_name: jellyseerr
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:5055/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - sonarr
-      - radarr
-      - jellyfin
+      sonarr:
+        condition: service_healthy
+      radarr:
+        condition: service_healthy
+      jellyfin:
+        condition: service_healthy
     volumes:
       - jellyseerr-config:/app/config
     environment:

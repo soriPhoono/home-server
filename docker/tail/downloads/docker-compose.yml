@@ -1,3 +1,6 @@
+x-common:
+  server-config: &server-config
+    TZ: America/Chicago
 services:
   tailscale:
     image: tailscale/tailscale:stable
@@ -6,10 +9,10 @@ services:
     hostname: qbittorrent-tailscale
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:9002/healthz || exit 1"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     devices:
       - /dev/net/tun
     cap_add:
@@ -25,16 +28,26 @@ services:
       - tailscale-config:/var/lib/tailscale
     networks:
       - core_traefik-public
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
   qbittorrent-tailscale:
     image: linuxserver/qbittorrent
     container_name: qbittorrent-tailscale
     restart: unless-stopped
     network_mode: "service:tailscale"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       tailscale:
         condition: service_healthy
     environment:
-      - TZ=America/Chicago
+      !!merge <<: *server-config
     volumes:
       - qbittorrent-config:/config
       - /mnt/data/media/Torrent:/downloads
@@ -53,10 +66,17 @@ services:
     image: linuxserver/prowlarr
     container_name: prowlarr
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9696 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - qbittorrent-tailscale
+      qbittorrent-tailscale:
+        condition: service_healthy
     environment:
-      - TZ=America/Chicago
+      !!merge <<: *server-config
     volumes:
       - prowlarr-config:/config
     networks:

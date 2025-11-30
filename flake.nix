@@ -27,13 +27,14 @@
         secrets = {
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
           MARIADB_PASSWORD.file = ./secrets/mariadb_password.age;
-          REDIS_PASSWORD.file = ./secrets/redis_password.age;
 
           TAILSCALE_AUTH_KEY.file = ./secrets/tailscale_auth_key.age;
 
           DJANGO_SECRET_KEY.file = ./secrets/funkwhale-django_secret_key.age;
           TYPESENSE_API_KEY.file = ./secrets/typesense-api_key.age;
           FUNKWHALE_DB_PASSWORD.file = ./secrets/funkwhale_db_password.age;
+
+          PTERODACTYL_DB_PASSWORD.file = ./secrets/pterodactyl_db_password.age;
 
           AUTHENTIK_DB_PASSWORD.file = ./secrets/authentik_db_password.age;
           AUTHENTIK_SECRET_KEY.file = ./secrets/authentik_secret_key.age;
@@ -67,16 +68,17 @@
                   docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
                 fi
 
-                docker compose -f ./docker/admin/backend/docker-compose.yml up -d --remove-orphans
+                docker compose -f ./docker/admin/backend/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --wait --remove-orphans
 
-                docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --remove-orphans
+                docker compose -f ./docker/tail/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/downloads/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --remove-orphans
 
-                docker compose -f ./docker/tail/docker-compose.yml up -d --remove-orphans
-                docker compose -f ./docker/tail/downloads/docker-compose.yml up -d --remove-orphans
-                docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --remove-orphans
-                # docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --remove-orphans
+                docker compose -f ./docker/tail/pterodactyl/docker-compose.yml up -d --wait --remove-orphans
 
-                # docker compose -f ./docker/public/auth/docker-compose.yml up -d --remove-orphans
+                docker compose -f ./docker/public/auth/docker-compose.yml up -d --remove-orphans
 
                 # docker compose -f ./docker/public/cloud/docker-compose.yml up -d --remove-orphans
               '';
@@ -92,16 +94,18 @@
               text = ''
                 set -euo pipefail
 
-                docker compose -f ./docker/public/cloud/docker-compose.yml down
+                # docker compose -f ./docker/public/cloud/docker-compose.yml down
 
                 docker compose -f ./docker/public/auth/docker-compose.yml down
+
+                docker compose -f ./docker/tail/pterodactyl/docker-compose.yml down
 
                 docker compose -f ./docker/tail/jukebox/docker-compose.yml down
                 docker compose -f ./docker/tail/pvr/docker-compose.yml down
                 docker compose -f ./docker/tail/downloads/docker-compose.yml down
+                docker compose -f ./docker/tail/docker-compose.yml down
 
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml down
-
                 docker compose -f ./docker/admin/backend/docker-compose.yml down
               '';
             };
