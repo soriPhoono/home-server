@@ -2,7 +2,7 @@ x-common:
   server-config: &server-config
     TZ: America/Chicago
 services:
-  tailscale:
+  qbittorrent-tailscale:
     image: tailscale/tailscale:stable
     container_name: tailscale
     restart: unless-stopped
