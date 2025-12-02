@@ -26,7 +26,7 @@ services:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.sonarr.rule=Host(`pvr.ts.${DOMAIN_NAME}`) && PathPrefix(`/shows`)
+      - traefik.http.routers.sonarr.rule=Host(`pvr.admin.ts.${DOMAIN_NAME}`) && PathPrefix(`/shows`)
       - traefik.http.routers.sonarr.entrypoints=websecure
       - traefik.http.routers.sonarr.tls=true
       - traefik.http.routers.sonarr.tls.certresolver=cf-ts
@@ -55,7 +55,7 @@ services:
         loki-url: http://localhost:3100/loki/api/v1/push
     labels:
       - traefik.enable=true
-      - traefik.http.routers.radarr.rule=Host(`pvr.ts.${DOMAIN_NAME}`) && PathPrefix(`/movies`)
+      - traefik.http.routers.radarr.rule=Host(`pvr.admin.ts.${DOMAIN_NAME}`) && PathPrefix(`/movies`)
       - traefik.http.routers.radarr.entrypoints=websecure
       - traefik.http.routers.radarr.tls=true
       - traefik.http.routers.radarr.tls.certresolver=cf-ts
