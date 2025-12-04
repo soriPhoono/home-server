@@ -25,6 +25,8 @@
       systems = with inputs; import systems;
       agenix-shell = {
         secrets = {
+          CF_API_TOKEN.file = ./secrets/cloudflare_api_token.age;
+
           POSTGRES_PASSWORD.file = ./secrets/postgres_password.age;
           MARIADB_PASSWORD.file = ./secrets/mariadb_password.age;
 

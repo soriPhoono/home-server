@@ -67,11 +67,5 @@ networks:
   backend_default:
     external: true
   pterodactyl-wings:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.50.0.0/32
-    driver_opts:
-      com.docker.network.bridge.name: pterodactyl-wings
   core_traefik-public:
     external: true

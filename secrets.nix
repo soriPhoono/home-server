@@ -3,6 +3,8 @@ let
 
   keys = [soriphoono];
 in {
+  "secrets/cloudflare_api_token.age".publicKeys = keys;
+
   "secrets/postgres_password.age".publicKeys = keys;
   "secrets/mariadb_password.age".publicKeys = keys;
 
