@@ -70,16 +70,18 @@
                   docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
                 fi
 
+                docker compose -f ./docker/admin/proxy/docker-compose.yml up -d --wait --remove-orphans
+
+                docker compose -f ./docker/admin/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/admin/backend/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/admin/downloads/docker-compose.yml up -d --wait --remove-orphans
-                docker compose -f ./docker/admin/games-server/docker-compose.yml up -d --wait --remove-orphans
 
                 docker compose -f ./docker/tail/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --wait --remove-orphans
 
-                docker compose -f ./docker/public/auth/docker-compose.yml up -d --wait --remove-orphans
+                # docker compose -f ./docker/public/auth/docker-compose.yml up -d --wait --remove-orphans
 
                 # docker compose -f ./docker/public/cloud/docker-compose.yml up -d --wait --remove-orphans
               '';
