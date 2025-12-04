@@ -20,6 +20,8 @@ services:
       !!merge <<: *server-config
     networks:
       - core_traefik-public
+    ports:
+      - 8989:8989
     logging:
       driver: loki
       options:
@@ -49,6 +51,8 @@ services:
       !!merge <<: *server-config
     networks:
       - core_traefik-public
+    ports:
+      - 7878:7878
     logging:
       driver: loki
       options:
@@ -80,6 +84,8 @@ services:
       !!merge <<: *server-config
     networks:
       - core_traefik-public
+    ports:
+      - 8096:8096
     logging:
       driver: loki
       options:
