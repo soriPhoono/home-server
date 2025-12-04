@@ -56,7 +56,7 @@ services:
       - traefik.http.routers.traefik-secure.rule=Host(`dashboard.admin.ts.${DOMAIN_NAME}`)
       - traefik.http.routers.traefik-secure.entrypoints=websecure
       - traefik.http.routers.traefik-secure.tls=true
-      - traefik.http.routers.traefik-secure.tls.certresolver=le-ts
+      - traefik.http.routers.traefik-secure.tls.certresolver=cf-ts
       - traefik.http.routers.traefik-secure.service=api@internal
       - traefik.http.middlewares.traefik-auth.basicauth.users=admin:$2y$05$/UrxciXCv1x57qFZhDwBLOT2FkMjn2JoLW4yoXmKbQgbawFB8AJkq
       - traefik.http.routers.traefik-secure.middlewares=traefik-auth

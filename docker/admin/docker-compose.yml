@@ -20,7 +20,7 @@ services:
       - traefik.http.routers.portainer.rule=Host(`admin.${DOMAIN_NAME}`)
       - traefik.http.routers.portainer.entrypoints=websecure
       - traefik.http.routers.portainer.tls=true
-      - traefik.http.routers.portainer.tls.certresolver=le
+      - traefik.http.routers.portainer.tls.certresolver=cf-ts
       - traefik.http.services.portainer.loadbalancer.server.port=9000
   agent:
     image: portainer/agent:lts
