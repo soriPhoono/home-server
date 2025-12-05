@@ -6,7 +6,7 @@ x-common:
 services:
   qbittorrent-tailscale:
     image: tailscale/tailscale:stable
-    container_name: tailscale
+    container_name: qbittorrent-tailscale
     restart: unless-stopped
     hostname: qbittorrent
     healthcheck:
