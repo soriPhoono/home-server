@@ -51,6 +51,8 @@ services:
       !!merge <<: *server-config
     networks:
       - core_traefik-public
+    ports:
+      - 7878:7878
     logging:
       driver: loki
       options:
