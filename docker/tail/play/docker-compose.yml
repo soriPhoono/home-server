@@ -27,7 +27,7 @@ services:
       - traefik.http.routers.wolf.entrypoints=websecure
       - traefik.http.routers.wolf.tls=true
       - traefik.http.routers.wolf.tls.certresolver=cf-ts
-      - traefik.http.services.wolf.loadbalancer.server.port=47999 # 47989
+      - traefik.http.services.wolf.loadbalancer.server.port=47989
 volumes:
   wolf-configuration:
 networks:
