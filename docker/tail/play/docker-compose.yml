@@ -14,22 +14,6 @@ services:
       - /dev/dri
       - /dev/uinput
       - /dev/uhid
-    networks:
-      - core_traefik-public
-    ports:
-      - 47999:47999/tcp
-      - 48010:48010/tcp
-      - 48100:48100/udp
-      - 48200:48200/udp
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.wolf.rule=Host(`adam.${TS_DOMAIN_NAME}`)
-      - traefik.http.routers.wolf.entrypoints=websecure
-      - traefik.http.routers.wolf.tls=true
-      - traefik.http.routers.wolf.tls.certresolver=cf-ts
-      - traefik.http.services.wolf.loadbalancer.server.port=47989
+    network_mode: host
 volumes:
   wolf-configuration:
-networks:
-  core_traefik-public:
-    external: true
