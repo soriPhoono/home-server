@@ -1,6 +1,8 @@
 x-common:
   server-config: &server-config
     TZ: America/Chicago
+    PUID: 1000
+    PGID: 1000
 services:
   sonarr:
     image: linuxserver/sonarr
