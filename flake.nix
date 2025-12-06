@@ -77,10 +77,10 @@
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/admin/downloads/docker-compose.yml up -d --wait --remove-orphans
 
-                # docker compose -f ./docker/tail/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/docker-compose.yml up -d --wait --remove-orphans
                 docker compose -f ./docker/tail/pvr/docker-compose.yml up -d --wait --remove-orphans
-                # docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --wait --remove-orphans
-                # docker compose -f ./docker/tail/play/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/jukebox/docker-compose.yml up -d --wait --remove-orphans
+                docker compose -f ./docker/tail/play/docker-compose.yml up -d --wait --remove-orphans
 
                 # docker compose -f ./docker/public/auth/docker-compose.yml up -d --wait --remove-orphans
 
@@ -102,10 +102,10 @@
 
                 # docker compose -f ./docker/public/auth/docker-compose.yml down
 
-                # docker compose -f ./docker/tail/play/docker-compose.yml down
-                # docker compose -f ./docker/tail/jukebox/docker-compose.yml down
+                docker compose -f ./docker/tail/play/docker-compose.yml down
+                docker compose -f ./docker/tail/jukebox/docker-compose.yml down
                 docker compose -f ./docker/tail/pvr/docker-compose.yml down
-                # docker compose -f ./docker/tail/docker-compose.yml down
+                docker compose -f ./docker/tail/docker-compose.yml down
 
                 docker compose -f ./docker/admin/downloads/docker-compose.yml down
                 docker compose -f ./docker/admin/monitoring/docker-compose.yml down
