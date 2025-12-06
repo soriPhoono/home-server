@@ -8,6 +8,7 @@ services:
     environment:
       - WOLF_RENDER_NODE=/dev/dri/renderD129
       - WOLF_ENCODER_NODE=/dev/dri/renderD128
+      - WOLF_LOG_LEVEL=DEBUG
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - wolf-configuration:/etc/wolf
